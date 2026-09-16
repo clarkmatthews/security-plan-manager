@@ -8,9 +8,6 @@ Security Plan Manager is built for CSOs, assessors, control owners, auditors, an
 
 ### Program and brands
 - Create an organization and one or more brands, each with a period profile (for example `2026-Q3`).
-- Program home shows Current, Target, and coverage for every brand you can access.
-- Hamburger navigation on the left; **Sign out** stays on the top right.
-- Program submenu links go straight to a brand (for example Apex Retail or Apex Wholesale).
 
 ### NIST CSF 2.0 scoring
 - Catalog is the CSF 2.0 Core: 6 functions, 22 categories, and 106 subcategories.
@@ -24,20 +21,16 @@ Security Plan Manager is built for CSOs, assessors, control owners, auditors, an
 
 ### Board reports
 - Live Current vs Target scores on brand dashboards and board scorecards.
-- Publish a dated snapshot as a checkpoint. Reports lists those snapshots; opening one shows the scorecard and largest gaps.
+- Publish a dated snapshot as a checkpoint. Reports lists those snapshots; opening one shows the scorecard and largest gaps as of the time of the snapshot.
 
 ### People
 - Roster with role changes, deactivate, and reactivate.
-- Deactivated people cannot sign in or complete onboarding.
 - Invite by email with a shareable link. Only owners can assign the owner role.
-- The last active organization owner cannot be removed or deactivated.
 
 ### Roles and access
-- Per-organization roles with **None / View / Edit** (radio) for Program, Assessment, Evidence, History, Reports, People, and Roles. Edit includes View.
+- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, and Roles. Edit includes View.
 - Brand access is defined on the role (all brands or selected brands), not on each person.
 - Add custom roles, optionally copying permissions and brand access from an existing role.
-- You cannot delete a role while people are assigned or invites are still open. The organization owner role is locked and cannot be deleted.
-- Navigation and pages follow those permissions. Brand pages return not found when the role cannot open that brand.
 
 ### Accounts
 - Email/password sign-in and sign-up.
