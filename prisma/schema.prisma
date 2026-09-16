@@ -1,0 +1,382 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductArea {
+  PROGRAM
+  ASSESSMENT
+  EVIDENCE
+  HISTORY
+  REPORTS
+  PEOPLE
+  ROLES
+}
+
+enum ProfileStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum CsfTier {
+  PARTIAL
+  RISK_INFORMED
+  REPEATABLE
+  ADAPTIVE
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  emailVerified   DateTime?
+  image           String?
+  passwordHash    String?
+  isPlatformAdmin Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
+  createdInvites  Invite[]     @relation("InvitedBy")
+  evidence        Evidence[]
+  snapshots       ReportSnapshot[]
+  assessmentChanges AssessmentChange[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  brands      Brand[]
+  invites     Invite[]
+  profiles    Profile[]
+  assessments SubcategoryAssessment[]
+  evidence    Evidence[]
+  snapshots   ReportSnapshot[]
+  assessmentChanges AssessmentChange[]
+  rolePermissions RolePermission[]
+  roleBrandScopes RoleBrandScope[]
+  organizationRoles OrganizationRole[]
+}
+
+model OrganizationRole {
+  id             String       @id @default(cuid())
+  organizationId String
+  key            String
+  name           String
+  locked         Boolean      @default(false)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+}
+
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           String
+  active         Boolean  @default(true)
+  allBrands      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brandAccess  BrandAccess[]
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, active])
+}
+
+model RolePermission {
+  id             String      @id @default(cuid())
+  organizationId String
+  role           String
+  area           ProductArea
+  canRead        Boolean     @default(false)
+  canView        Boolean     @default(false)
+  canEdit        Boolean     @default(false)
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, role, area])
+  @@index([organizationId])
+}
+
+model RoleBrandScope {
+  id             String   @id @default(cuid())
+  organizationId String
+  role           String
+  allBrands      Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brands       RoleBrandAccess[]
+
+  @@unique([organizationId, role])
+  @@index([organizationId])
+}
+
+model RoleBrandAccess {
+  id      String @id @default(cuid())
+  scopeId String
+  brandId String
+
+  scope RoleBrandScope @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  brand Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([scopeId, brandId])
+}
+
+model Brand {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  slug           String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  profiles     Profile[]
+  access       BrandAccess[]
+  roleAccess   RoleBrandAccess[]
+
+  @@unique([organizationId, slug])
+}
+
+model BrandAccess {
+  id           String @id @default(cuid())
+  membershipId String
+  brandId      String
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  brand      Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, brandId])
+}
+
+model Invite {
+  id             String    @id @default(cuid())
+  organizationId String
+  email          String
+  role           String
+  token          String    @unique
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  invitedById    String
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([organizationId, email])
+}
+
+model CsfFunction {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  name        String
+  description String
+  sortOrder   Int
+  categories  CsfCategory[]
+}
+
+model CsfCategory {
+  id            String            @id @default(cuid())
+  functionId    String
+  code          String            @unique
+  name          String
+  description   String
+  sortOrder     Int
+  function      CsfFunction       @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  subcategories CsfSubcategory[]
+}
+
+model CsfSubcategory {
+  id          String                  @id @default(cuid())
+  categoryId  String
+  code        String                  @unique
+  description String
+  sortOrder   Int
+  category    CsfCategory             @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  assessments SubcategoryAssessment[]
+}
+
+model Profile {
+  id             String         @id @default(cuid())
+  organizationId String
+  brandId        String
+  period         String
+  name           String?
+  status         ProfileStatus  @default(DRAFT)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brand        Brand                   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  assessments  SubcategoryAssessment[]
+  snapshots    ReportSnapshot[]
+
+  @@unique([brandId, period])
+  @@index([organizationId])
+}
+
+model SubcategoryAssessment {
+  id                String    @id @default(cuid())
+  organizationId    String
+  profileId         String
+  subcategoryId     String
+  includedInProfile Boolean   @default(true)
+  rationale         String?
+
+  currentPriority   Priority?
+  currentStatus     String?
+  currentTier       CsfTier?
+  currentPolicies   String?
+  currentPractices  String?
+  currentRoles      String?
+  currentReferences String?
+
+  targetPriority    Priority?
+  targetTier        CsfTier?
+  targetPolicies    String?
+  targetPractices   String?
+  targetRoles       String?
+  targetReferences  String?
+
+  notes             String?
+  considerations    String?
+  updatedAt         DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  subcategory  CsfSubcategory @relation(fields: [subcategoryId], references: [id])
+  evidence     Evidence[]
+  changes      AssessmentChange[]
+
+  @@unique([profileId, subcategoryId])
+  @@index([organizationId])
+}
+
+model Evidence {
+  id             String   @id @default(cuid())
+  organizationId String
+  assessmentId   String
+  title          String
+  url            String?
+  notes          String?
+  fileName       String?
+  storedName     String?
+  mimeType       String?
+  sizeBytes      Int?
+  createdById    String
+  createdAt      DateTime @default(now())
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment   SubcategoryAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  createdBy    User                   @relation(fields: [createdById], references: [id])
+
+  @@index([organizationId])
+  @@index([assessmentId])
+}
+
+enum AssessmentChangeField {
+  CURRENT_TIER
+  TARGET_TIER
+}
+
+model AssessmentChange {
+  id             String                 @id @default(cuid())
+  organizationId String
+  assessmentId   String
+  userId         String
+  field          AssessmentChangeField
+  fromValue      String?
+  toValue        String?
+  comment        String?
+  createdAt      DateTime               @default(now())
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assessment   SubcategoryAssessment  @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user         User                   @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([assessmentId])
+  @@index([createdAt])
+}
+
+model ReportSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String
+  profileId      String
+  scoresJson     Json
+  publishedAt    DateTime @default(now())
+  publishedById  String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  publishedBy  User         @relation(fields: [publishedById], references: [id])
+
+  @@index([organizationId])
+  @@index([profileId])
+}
