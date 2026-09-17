@@ -3,7 +3,8 @@ export const OWNER_ROLE_KEY = "ORG_OWNER";
 export const ROLE_LABEL: Record<string, string> = {
   PLATFORM_ADMIN: "Platform admin",
   ORG_OWNER: "Organization owner",
-  CSO: "CSO",
+  CISO: "CISO",
+  CSO: "CISO",
   ASSESSOR: "Assessor",
   CONTROL_OWNER: "Control owner",
   AUDITOR: "Auditor",
@@ -12,7 +13,7 @@ export const ROLE_LABEL: Record<string, string> = {
 
 export const SYSTEM_ROLES = [
   { key: "ORG_OWNER", name: "Organization owner", locked: true, sortOrder: 0 },
-  { key: "CSO", name: "CSO", locked: false, sortOrder: 1 },
+  { key: "CISO", name: "CISO", locked: false, sortOrder: 1 },
   { key: "ASSESSOR", name: "Assessor", locked: false, sortOrder: 2 },
   { key: "CONTROL_OWNER", name: "Control owner", locked: false, sortOrder: 3 },
   { key: "AUDITOR", name: "Auditor", locked: false, sortOrder: 4 },
@@ -119,6 +120,7 @@ function mapWith(
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
   PLATFORM_ADMIN: mapWith({}, full),
   ORG_OWNER: mapWith({}, full),
+  CISO: mapWith({}, full),
   CSO: mapWith({}, full),
   ASSESSOR: mapWith({
     PROGRAM: viewOnly,
@@ -178,7 +180,8 @@ export function accessFromMode(mode: AccessMode): AreaAccess {
 }
 
 export function defaultPermissionMap(role: string): PermissionMap {
-  const source = DEFAULT_ROLE_PERMISSIONS[role] ?? emptyPermissionMap();
+  const resolved = role === "CSO" ? "CISO" : role;
+  const source = DEFAULT_ROLE_PERMISSIONS[resolved] ?? emptyPermissionMap();
   return {
     PROGRAM: normalizeAccess(source.PROGRAM),
     ASSESSMENT: normalizeAccess(source.ASSESSMENT),
@@ -195,7 +198,7 @@ export function defaultPermissionMatrix(): RolePermissionMatrix {
   return {
     PLATFORM_ADMIN: defaultPermissionMap("PLATFORM_ADMIN"),
     ORG_OWNER: defaultPermissionMap("ORG_OWNER"),
-    CSO: defaultPermissionMap("CSO"),
+    CISO: defaultPermissionMap("CISO"),
     ASSESSOR: defaultPermissionMap("ASSESSOR"),
     CONTROL_OWNER: defaultPermissionMap("CONTROL_OWNER"),
     AUDITOR: defaultPermissionMap("AUDITOR"),

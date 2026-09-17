@@ -73,7 +73,7 @@ export default async function BrandReportsPage({
                 .
               </>
             ) : (
-              " A CSO or owner can publish one from this brand."
+              " A CISO or owner can publish one from this brand."
             )}
           </p>
         </Card>

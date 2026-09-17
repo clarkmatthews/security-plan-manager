@@ -19,7 +19,7 @@ export default async function HomePage() {
           NIST Cybersecurity Framework 2.0
         </p>
         <h1 className="mt-4 max-w-3xl text-5xl font-semibold leading-tight">
-          Score a brand against NIST CSF, then report it to the CSO and the board.
+          Score a brand against NIST CSF, then report it to the CISO and the board.
         </h1>
         <p className="mt-6 max-w-2xl text-lg text-[var(--muted)]">
           Operators assess Current vs Target profiles across Govern, Identify, Protect,
@@ -37,7 +37,7 @@ export default async function HomePage() {
         <div className="mt-16 grid gap-4 md:grid-cols-3">
           {[
             ["Operators", "Work subcategory by subcategory with evidence, tiers, and gap notes."],
-            ["CSO", "Watch function heatmaps, coverage, and the largest control gaps."],
+            ["CISO", "Watch function heatmaps, coverage, and the largest control gaps."],
             ["Board", "Read published snapshots that stay frozen after operators keep scoring."],
           ].map(([title, body]) => (
             <div key={title} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">

@@ -36,7 +36,7 @@ export default async function AppHomePage() {
       <div>
         <h1 className="text-3xl font-semibold">Cybersecurity program</h1>
         <p className="mt-2 text-[var(--muted)]">
-          Brands roll up Current vs Target NIST CSF 2.0 profiles for CSO and board reporting.
+          Brands roll up Current vs Target NIST CSF 2.0 profiles for CISO and board reporting.
         </p>
       </div>
 

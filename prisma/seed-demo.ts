@@ -3,7 +3,7 @@ import type { CsfTier, Priority, PrismaClient } from "@prisma/client";
 import { computeScorecard } from "../src/lib/scoring";
 import { toScoreInputs } from "../src/lib/catalog";
 import { MANAGED_ROLES, PRODUCT_AREAS, defaultPermissionMap } from "../src/lib/rbac";
-import { ensureOrganizationRoles } from "../src/lib/org-roles";
+import { ensureOrganizationRoles, renameLegacyCsoIdentity } from "../src/lib/org-roles";
 
 export const DEMO_PASSWORD = "ChangeMe123!";
 
@@ -69,12 +69,13 @@ function sampleFor(
 
 export async function seedDemoWorkspace(prisma: PrismaClient) {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  await renameLegacyCsoIdentity(prisma);
 
-  const cso = await prisma.user.upsert({
-    where: { email: "cso@apex.example" },
+  const ciso = await prisma.user.upsert({
+    where: { email: "ciso@apex.example" },
     update: { name: "Jordan Hale", passwordHash },
     create: {
-      email: "cso@apex.example",
+      email: "ciso@apex.example",
       name: "Jordan Hale",
       passwordHash,
     },
@@ -113,15 +114,15 @@ export async function seedDemoWorkspace(prisma: PrismaClient) {
     prisma.membership.upsert({
       where: {
         userId_organizationId: {
-          userId: cso.id,
+          userId: ciso.id,
           organizationId: organization.id,
         },
       },
-      update: { role: "CSO" },
+      update: { role: "CISO" },
       create: {
-        userId: cso.id,
+        userId: ciso.id,
         organizationId: organization.id,
-        role: "CSO",
+        role: "CISO",
       },
     }),
     prisma.membership.upsert({
@@ -218,7 +219,7 @@ export async function seedDemoWorkspace(prisma: PrismaClient) {
     period: "2026-Q3",
     coverage: "full",
     subcategories,
-    publishedById: cso.id,
+    publishedById: ciso.id,
     evidenceById: analyst.id,
     publish: true,
   });
@@ -229,13 +230,13 @@ export async function seedDemoWorkspace(prisma: PrismaClient) {
     period: "2026-Q3",
     coverage: "partial",
     subcategories,
-    publishedById: cso.id,
+    publishedById: ciso.id,
     evidenceById: analyst.id,
     publish: false,
   });
 
   console.log("Demo workspace: Apex Consumer Brands");
-  console.log("  CSO      cso@apex.example / ChangeMe123!");
+  console.log("  CISO     ciso@apex.example / ChangeMe123!");
   console.log("  Analyst  analyst@apex.example / ChangeMe123!");
   console.log("  Board    board@apex.example / ChangeMe123!");
   console.log(`  Published retail profile ${retailProfile.period}`);

@@ -40,7 +40,11 @@ export function RolePermissionsForm({
   );
   const [matrix, setMatrix] = useState(initialMatrix);
   const [brandScopes, setBrandScopes] = useState(initialBrandScopes);
-  const fallbackRole = roleKeys.includes("CSO") ? "CSO" : (roleKeys[0] ?? "ORG_OWNER");
+  const fallbackRole = roleKeys.includes("CISO")
+    ? "CISO"
+    : roleKeys.includes("CSO")
+      ? "CSO"
+      : (roleKeys[0] ?? "ORG_OWNER");
   const [selectedRole, setSelectedRole] = useState(
     initialSelectedRole && roleByKey[initialSelectedRole] ? initialSelectedRole : fallbackRole,
   );

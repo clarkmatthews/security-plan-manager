@@ -2,7 +2,7 @@
 
 A multi-tenant NIST CSF 2.0 workspace for assessing brands, tracking Current vs Target posture, attaching evidence, managing software inventory, and publishing frozen board scorecards.
 
-Security Plan Manager is built for CSOs, assessors, control owners, auditors, and board viewers who need a shared organizational profile rather than a static spreadsheet.
+Security Plan Manager is built for CISOs, assessors, control owners, auditors, and board viewers who need a shared organizational profile rather than a static spreadsheet.
 
 ## Features
 
@@ -93,7 +93,7 @@ npm run cve:sync
 
 | Role | Email | Password |
 | --- | --- | --- |
-| CSO | `cso@apex.example` | `ChangeMe123!` |
+| CISO | `ciso@apex.example` | `ChangeMe123!` |
 | Assessor | `analyst@apex.example` | `ChangeMe123!` |
 | Board viewer | `board@apex.example` | `ChangeMe123!` |
 
@@ -117,7 +117,7 @@ Brand list with Current, Target, and coverage, plus creating another brand.
 
 ### Brand dashboard
 
-Live CSO view of NIST CSF 2.0 functions, highest brand risks, and software/CVE insights.
+Live CISO view of NIST CSF 2.0 functions, highest brand risks, and software/CVE insights.
 
 ![Apex Retail brand dashboard](docs/screenshots/03-brand-dashboard.png)
 

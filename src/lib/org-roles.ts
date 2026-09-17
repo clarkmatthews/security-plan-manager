@@ -22,7 +22,105 @@ export type RoleActionResult =
   | { ok: true; key: string }
   | { ok: false; error: string };
 
+export async function renameLegacyCsoIdentity(db: Db = prisma) {
+  const legacyUser = await db.user.findUnique({
+    where: { email: "cso@apex.example" },
+    select: { id: true },
+  });
+  const taken = await db.user.findUnique({
+    where: { email: "ciso@apex.example" },
+    select: { id: true },
+  });
+  if (legacyUser && !taken) {
+    await db.user.update({
+      where: { id: legacyUser.id },
+      data: { email: "ciso@apex.example" },
+    });
+  }
+
+  const legacyRoles = await db.organizationRole.findMany({
+    where: { key: "CSO" },
+    select: { id: true, organizationId: true },
+  });
+  for (const role of legacyRoles) {
+    await renameOrganizationRoleKey(role.organizationId, "CSO", "CISO", "CISO", db);
+  }
+}
+
+async function renameOrganizationRoleKey(
+  organizationId: string,
+  fromKey: string,
+  toKey: string,
+  toName: string,
+  db: Db,
+) {
+  const current = await db.organizationRole.findUnique({
+    where: { organizationId_key: { organizationId, key: fromKey } },
+  });
+  if (!current) return;
+
+  const dest = await db.organizationRole.findUnique({
+    where: { organizationId_key: { organizationId, key: toKey } },
+  });
+
+  await db.membership.updateMany({
+    where: { organizationId, role: fromKey },
+    data: { role: toKey },
+  });
+  await db.invite.updateMany({
+    where: { organizationId, role: fromKey },
+    data: { role: toKey },
+  });
+
+  const destPermissions = dest
+    ? await db.rolePermission.findMany({
+        where: { organizationId, role: toKey },
+        select: { area: true },
+      })
+    : [];
+  const destAreas = new Set(destPermissions.map((row) => row.area));
+  const sourcePermissions = await db.rolePermission.findMany({
+    where: { organizationId, role: fromKey },
+  });
+  for (const row of sourcePermissions) {
+    if (destAreas.has(row.area)) {
+      await db.rolePermission.delete({ where: { id: row.id } });
+      continue;
+    }
+    await db.rolePermission.update({
+      where: { id: row.id },
+      data: { role: toKey },
+    });
+  }
+
+  const sourceScope = await db.roleBrandScope.findUnique({
+    where: { organizationId_role: { organizationId, role: fromKey } },
+  });
+  const destScope = await db.roleBrandScope.findUnique({
+    where: { organizationId_role: { organizationId, role: toKey } },
+  });
+  if (sourceScope && !destScope) {
+    await db.roleBrandScope.update({
+      where: { id: sourceScope.id },
+      data: { role: toKey },
+    });
+  } else if (sourceScope && destScope) {
+    await db.roleBrandScope.delete({ where: { id: sourceScope.id } });
+  }
+
+  if (dest) {
+    await db.organizationRole.delete({ where: { id: current.id } });
+    return;
+  }
+
+  await db.organizationRole.update({
+    where: { id: current.id },
+    data: { key: toKey, name: current.name === "CSO" ? toName : current.name },
+  });
+}
+
 export async function ensureOrganizationRoles(organizationId: string, db: Db = prisma) {
+  await renameLegacyCsoIdentity(db);
   const existing = await db.organizationRole.findMany({
     where: { organizationId },
   });

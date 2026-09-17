@@ -60,7 +60,7 @@ export default async function BrandDashboardPage({
       <div>
         <h1 className="text-3xl font-semibold">{brand.name}</h1>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Live CSO view of NIST CSF 2.0 Current vs Target. Scores update whenever the
+          Live CISO view of NIST CSF 2.0 Current vs Target. Scores update whenever the
           organizational profile assessment changes.
         </p>
       </div>
