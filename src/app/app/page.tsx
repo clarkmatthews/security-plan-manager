@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireArea } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { brandWhereFor } from "@/lib/brand-access";
-import { computeScorecard, formatScore } from "@/lib/scoring";
+import { computeScorecard, formatCompletion, formatScore } from "@/lib/scoring";
 import { toScoreInputs } from "@/lib/catalog";
 import { CreateBrandForm } from "@/components/create-brand-form";
 import { Card } from "@/components/ui";
@@ -70,7 +70,13 @@ export default async function AppHomePage() {
                       <span>Current {formatScore(scorecard?.overallCurrent ?? null)}</span>
                       <span>Target {formatScore(scorecard?.overallTarget ?? null)}</span>
                       <span>
-                        Coverage {scorecard ? Math.round(scorecard.coverage * 100) : 0}%
+                        Coverage{" "}
+                        {scorecard
+                          ? formatCompletion(
+                              scorecard.overallCurrent,
+                              scorecard.overallTarget,
+                            )
+                          : "—"}
                       </span>
                     </div>
                   </Card>

@@ -306,6 +306,24 @@ export function formatScore(value: number | null): string {
   return `${Math.round(value)}`;
 }
 
+export function completionRatio(
+  current: number | null,
+  target: number | null,
+): number | null {
+  if (current === null) return null;
+  if (target === null || target <= 0) return Math.min(current / 100, 1);
+  return Math.min(current / target, 1);
+}
+
+export function formatCompletion(
+  current: number | null,
+  target: number | null,
+): string {
+  const ratio = completionRatio(current, target);
+  if (ratio === null) return "—";
+  return `${Math.round(ratio * 100)}%`;
+}
+
 export function isFunctionCode(
   value: string | undefined | null,
 ): value is (typeof FUNCTION_ORDER)[number] {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FUNCTION_META, formatScore, functionLabel, TIER_LABEL, type FunctionScore, type GapItem, type Scorecard } from "@/lib/scoring";
+import { FUNCTION_META, formatCompletion, formatScore, functionLabel, TIER_LABEL, type FunctionScore, type GapItem, type Scorecard } from "@/lib/scoring";
 import { Card } from "@/components/ui";
 import type { BrandRisk } from "@/lib/brand-risks";
 
@@ -20,10 +20,12 @@ export function ScoreOverview({ scorecard }: { scorecard: Scorecard }) {
       </Card>
       <Card>
         <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Coverage</div>
-        <div className="mt-2 text-4xl font-semibold">{Math.round(scorecard.coverage * 100)}%</div>
+        <div className="mt-2 text-4xl font-semibold">
+          {formatCompletion(scorecard.overallCurrent, scorecard.overallTarget)}
+        </div>
         <div className="mt-1 text-sm text-[var(--muted)]">
-          {scorecard.complete} of {scorecard.included} in-scope outcomes have
-          Current and Target
+          {formatScore(scorecard.overallCurrent)} of {formatScore(scorecard.overallTarget)} toward
+          target
         </div>
       </Card>
       <Card>
@@ -70,14 +72,16 @@ export function FunctionScores({
                 </h3>
               </div>
               <span className="text-sm text-[var(--muted)]">
-                {Math.round(fn.coverage * 100)}% complete
+                {fn.currentScore === null
+                  ? "—"
+                  : `${formatScore(fn.currentScore)}% complete`}
               </span>
             </div>
             {showDescriptions && meta?.description ? (
               <p className="mt-2 text-sm text-[var(--muted)]">{meta.description}</p>
             ) : null}
             <div className="mt-1 text-xs text-[var(--muted)]">
-              {fn.complete} of {fn.included} with Current and Target
+              {formatScore(fn.currentScore)} of {formatScore(fn.targetScore)}
             </div>
             <div className="mt-4 space-y-2">
               <Bar label="Current" value={current} color={meta?.color ?? "#d7c36a"} />
