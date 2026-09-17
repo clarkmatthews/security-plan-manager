@@ -67,7 +67,7 @@ Next.js App Router, Auth.js (credentials JWT), Prisma, and PostgreSQL.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the daily CVE sync HTTP endpoint. Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
+1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the CVE sync HTTP endpoint. `CVE_SYNC_INTERVAL_HOURS` defaults to `24` (1–168). Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
 2. Start Postgres. Prefer Docker (`docker compose up -d`). If Docker is not installed, run a workspace-local cluster with `npm run db:start`.
 3. Push schema and seed the CSF catalog:
 
@@ -81,11 +81,15 @@ The seed loads 6 functions, 22 categories, and 106 subcategories, then a demo te
 
 4. Run the app: `npm run dev`
 
-Optional CVE jobs:
+Optional CVE jobs. The GitHub `cvelistV5` delta is also pulled on the first `/app` visit after `CVE_SYNC_INTERVAL_HOURS` (default 24). For a clocked pull while the app is running:
 
 ```
-npm run cve:sync
+npm run cve:cron
 ```
+
+That process syncs immediately, then every X hours. One-off: `npm run cve:sync`.
+
+An external crontab or host scheduler can POST to `/api/cron/cve-sync` with `Authorization: Bearer $CVE_SYNC_SECRET`. That run is forced unless you pass `?force=0`.
 
 ## Demo login
 
