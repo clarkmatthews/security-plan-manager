@@ -1,11 +1,111 @@
 import bcrypt from "bcryptjs";
-import type { CsfTier, Priority, PrismaClient } from "@prisma/client";
+import type { CsfTier, Priority, PrismaClient, SoftwareCategory } from "@prisma/client";
 import { computeScorecard } from "../src/lib/scoring";
 import { toScoreInputs } from "../src/lib/catalog";
 import { MANAGED_ROLES, PRODUCT_AREAS, defaultPermissionMap } from "../src/lib/rbac";
 import { ensureOrganizationRoles, renameLegacyCsoIdentity } from "../src/lib/org-roles";
 
 export const DEMO_PASSWORD = "ChangeMe123!";
+
+const DEMO_SOFTWARE: Array<{
+  productName: string;
+  companyName: string;
+  version: string;
+  category: SoftwareCategory;
+  notes: string;
+}> = [
+  {
+    productName: "Northlamp Ledger",
+    companyName: "Finchvale Works",
+    version: "3.2",
+    category: "BUSINESS_APPLICATION",
+    notes: "Internal finance workbook for brand close.",
+  },
+  {
+    productName: "Rivermark Planner",
+    companyName: "Softmeadow",
+    version: "1.8",
+    category: "BUSINESS_APPLICATION",
+    notes: "Seasonal merchandising calendar.",
+  },
+  {
+    productName: "Tidewell Mail",
+    companyName: "Harborquill",
+    version: "4.1",
+    category: "COLLABORATION",
+    notes: "Store-ops messaging.",
+  },
+  {
+    productName: "Grayharbor Vault",
+    companyName: "Ashthread Labs",
+    version: "2.0",
+    category: "SECURITY",
+    notes: "Secret and key locker.",
+  },
+  {
+    productName: "Maplewick Notes",
+    companyName: "Cedarline Studio",
+    version: "1.4",
+    category: "COLLABORATION",
+    notes: "Shift handover notes.",
+  },
+  {
+    productName: "Kindling Draft",
+    companyName: "Wrenhollow",
+    version: "0.7",
+    category: "AI",
+    notes: "Internal copy draft helper.",
+  },
+  {
+    productName: "Larkstone Board",
+    companyName: "Nimbusvale",
+    version: "5.3",
+    category: "COLLABORATION",
+    notes: "Cross-team task board.",
+  },
+  {
+    productName: "Copperlane Monitor",
+    companyName: "Ironbriar",
+    version: "0.9",
+    category: "INFRASTRUCTURE",
+    notes: "Store network health view.",
+  },
+  {
+    productName: "Willowgate Studio",
+    companyName: "Bramble & Reed",
+    version: "3.0",
+    category: "DEVELOPER_TOOL",
+    notes: "Internal integration workshop.",
+  },
+  {
+    productName: "Frostmere Atlas",
+    companyName: "Pebbleford Group",
+    version: "2.6",
+    category: "OTHER",
+    notes: "Store location directory.",
+  },
+];
+
+export async function seedDemoSoftware(
+  prisma: PrismaClient,
+  args: {
+    organizationId: string;
+    brandId: string;
+    createdById: string;
+  },
+) {
+  await prisma.softwareAsset.deleteMany({
+    where: { brandId: args.brandId },
+  });
+  await prisma.softwareAsset.createMany({
+    data: DEMO_SOFTWARE.map((item) => ({
+      organizationId: args.organizationId,
+      brandId: args.brandId,
+      createdById: args.createdById,
+      ...item,
+    })),
+  });
+}
 
 const TIERS: CsfTier[] = [
   "PARTIAL",
@@ -233,6 +333,15 @@ export async function seedDemoWorkspace(prisma: PrismaClient) {
     publishedById: ciso.id,
     evidenceById: analyst.id,
     publish: false,
+  });
+
+  await seedDemoSoftware(prisma, {
+    organizationId: organization.id,
+    brandId: retail.id,
+    createdById: analyst.id,
+  });
+  await prisma.softwareAsset.deleteMany({
+    where: { brandId: wholesale.id },
   });
 
   console.log("Demo workspace: Apex Consumer Brands");
