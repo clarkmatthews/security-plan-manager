@@ -46,7 +46,7 @@ export default async function AppHomePage() {
             <>
               <h2 className="text-lg font-medium">Create your first brand</h2>
               <p className="mt-2 mb-4 text-sm text-[var(--muted)]">
-                The CSF catalog is already loaded. A period profile will be created with all 106
+                The CSF catalog is already loaded. A profile will be created with all 106
                 subcategories.
               </p>
               <CreateBrandForm />
@@ -65,10 +65,7 @@ export default async function AppHomePage() {
                 : null;
               const card = (
                   <Card className="h-full transition hover:border-[var(--accent)]">
-                    <div className="text-xs uppercase tracking-wide text-[var(--muted)]">
-                      {profile?.period ?? "No profile"}
-                    </div>
-                    <h2 className="mt-1 text-xl font-medium">{brand.name}</h2>
+                    <h2 className="text-xl font-medium">{brand.name}</h2>
                     <div className="mt-4 flex gap-6 text-sm text-[var(--muted)]">
                       <span>Current {formatScore(scorecard?.overallCurrent ?? null)}</span>
                       <span>Target {formatScore(scorecard?.overallTarget ?? null)}</span>

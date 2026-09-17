@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { logoutAction } from "@/actions/auth";
 import { ROLE_LABEL, type NavLink } from "@/lib/rbac";
 import { AppNavMenu } from "@/components/app-nav-menu";
-import { Button } from "@/components/ui";
+import { CveAlertModal } from "@/components/cve-alert-modal";
+import { SignOutButton } from "@/components/sign-out-button";
+import type { CveAlertItem } from "@/lib/cve-alerts";
 
 export function AppShell({
   children,
@@ -10,12 +11,16 @@ export function AppShell({
   role,
   links,
   homeHref,
+  cveAlerts = [],
+  cveAlertTotal = 0,
 }: {
   children: ReactNode;
   orgName: string;
   role: string;
   links: NavLink[];
   homeHref: string;
+  cveAlerts?: CveAlertItem[];
+  cveAlertTotal?: number;
 }) {
   return (
     <div className="min-h-screen">
@@ -26,15 +31,12 @@ export function AppShell({
             <span className="hidden sm:inline">
               {orgName} · {ROLE_LABEL[role] ?? role}
             </span>
-            <form action={logoutAction}>
-              <Button type="submit" variant="ghost">
-                Sign out
-              </Button>
-            </form>
+            <SignOutButton />
           </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
+      <CveAlertModal initialAlerts={cveAlerts} total={cveAlertTotal} />
     </div>
   );
 }

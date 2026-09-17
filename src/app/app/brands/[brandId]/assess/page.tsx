@@ -116,7 +116,7 @@ export default async function AssessPage({
           </Link>
           <h1 className="mt-2 text-3xl font-semibold">Organizational profile</h1>
           <p className="mt-2 text-[var(--muted)]">
-            {profile.period} · {assessments.length} CSF 2.0 outcomes
+            {assessments.length} CSF 2.0 outcomes
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

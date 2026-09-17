@@ -12,10 +12,9 @@ import { currentPeriod, slugify } from "@/lib/scoring";
 const onboardingSchema = z.object({
   organizationName: z.string().min(2),
   brandName: z.string().min(2),
-  period: z.string().min(4).optional(),
 });
 
-export type OrgState = { error?: string } | undefined;
+export type OrgState = { error?: string; ok?: boolean } | undefined;
 
 async function uniqueSlug(base: string, exists: (slug: string) => Promise<boolean>) {
   const root = slugify(base) || "org";
@@ -43,11 +42,11 @@ export async function completeOnboarding(
   const parsed = onboardingSchema.safeParse({
     organizationName: formData.get("organizationName"),
     brandName: formData.get("brandName"),
-    period: formData.get("period") || currentPeriod(),
   });
   if (!parsed.success) {
     return { error: "Organization and brand names are required." };
   }
+  const period = currentPeriod();
 
   const orgSlug = await uniqueSlug(parsed.data.organizationName, async (slug) => {
     const found = await prisma.organization.findUnique({ where: { slug } });
@@ -95,7 +94,7 @@ export async function completeOnboarding(
       data: {
         organizationId: org.id,
         brandId: brand.id,
-        period: parsed.data.period ?? currentPeriod(),
+        period,
         assessments: {
           create: subcategories.map((subcategory) => ({
             organizationId: org.id,
@@ -124,7 +123,7 @@ export async function createBrandAction(
 ): Promise<OrgState> {
   const membership = await requireArea("PROGRAM", "edit");
   const name = String(formData.get("name") ?? "").trim();
-  const period = String(formData.get("period") ?? currentPeriod()).trim();
+  const period = currentPeriod();
   if (name.length < 2) {
     return { error: "Brand name is required." };
   }

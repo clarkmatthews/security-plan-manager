@@ -28,32 +28,3 @@ export async function liveScorecardForProfile(
     scorecard: computeScorecard(toScoreInputs(profile.assessments)),
   };
 }
-
-export async function syncLatestSnapshot(
-  profileId: string,
-  organizationId: string,
-) {
-  const live = await liveScorecardForProfile(profileId, organizationId);
-  if (!live) return;
-
-  const latest = await prisma.reportSnapshot.findFirst({
-    where: { profileId, organizationId },
-    orderBy: { publishedAt: "desc" },
-  });
-  if (!latest) return;
-
-  const previous = (latest.scoresJson ?? {}) as Record<string, unknown>;
-  await prisma.reportSnapshot.update({
-    where: { id: latest.id },
-    data: {
-      scoresJson: {
-        ...previous,
-        brandId: live.profile.brandId,
-        brandName: live.profile.brand.name,
-        period: live.profile.period,
-        updatedAt: new Date().toISOString(),
-        scorecard: live.scorecard,
-      },
-    },
-  });
-}

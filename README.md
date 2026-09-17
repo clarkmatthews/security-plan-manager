@@ -1,41 +1,67 @@
 # Security Plan Manager
 
-A multi-tenant NIST CSF 2.0 workspace for assessing brands, tracking Current vs Target posture, attaching evidence, and publishing board scorecards.
+A multi-tenant NIST CSF 2.0 workspace for assessing brands, tracking Current vs Target posture, attaching evidence, managing software inventory, and publishing frozen board scorecards.
 
 Security Plan Manager is built for CSOs, assessors, control owners, auditors, and board viewers who need a shared organizational profile rather than a static spreadsheet.
 
 ## Features
 
 ### Program and brands
+
 - Create an organization and one or more brands, each with a period profile (for example `2026-Q3`).
+- The hamburger menu lists brands under **Program**. Assessment, evidence, reports, publish, and software inventory sit under each brand.
 
 ### NIST CSF 2.0 scoring
+
 - Catalog is the CSF 2.0 Core: 6 functions, 22 categories, and 106 subcategories.
-- Brand dashboards show overall Current and Target (0–100, derived from CSF Tiers), coverage, evidence counts, and function cards with full names plus abbreviations (Govern (GV), Identify (ID), and so on).
+- Brand dashboards show overall Current and Target (0–100, derived from CSF Tiers), coverage, evidence counts, and function cards.
 - Inline Current and Target tier editors on the organizational profile, with an optional comment when a value changes.
 - Click an outcome to open a details panel with the abbreviation, full function/category/outcome text, profile inclusion, rationale, Current/Target fields, and edit history.
 
+### Highest brand risks
+
+- Live dashboards replace “Largest gaps” with **Highest brand risks**.
+- NIST CSF Current vs Target gaps are ranked first.
+- Unresolved installed-app CVEs appear only when CVSS is above 7.5, grouped by product so one application cannot fill the list (at most two CVE slots).
+
+### Software inventory and CVEs
+
+- Per-brand inventory of applications (product, company, version, category, notes).
+- Active products are matched against a rolling 120-day CVE catalog by product name.
+- Archived applications stay in history and are hidden from the default list. Use **View archived** at the bottom of the inventory to open them.
+- Filter the list by category (defaults to **All**). **Add software** is collapsed until you expand it.
+- Export a CSV template of the active list, edit it outside the app, and re-import: new rows are added, rows that keep their `id` are updated, and removed rows are archived.
+- Login alerts surface outstanding matches. **Acknowledge all** acknowledges every outstanding match, not just the preview.
+- Dashboard and report insight cards count unique **application + CVE date**, so one product with many same-day CVEs is one exposure, not hundreds.
+
 ### Evidence and history
+
 - Evidence locker holds URLs, notes, and file attachments linked to subcategory assessments.
 - History records Current and Target changes with who made them and any comment.
 
 ### Board reports
-- Live Current vs Target scores on brand dashboards and board scorecards.
-- Publish a dated snapshot as a checkpoint. Reports lists those snapshots; opening one shows the scorecard and largest gaps as of the time of the snapshot.
+
+- Live Current vs Target scores on brand dashboards. Publish a dated snapshot as a frozen checkpoint.
+- Reports are brand-specific and linked under each brand in the menu. Opening a snapshot shows the scorecard as of publish time.
+- Published scorecards include a plain-language explanation of each NIST function (Govern, Identify, Protect, Detect, Respond, Recover) for board readers.
+- New snapshots freeze **Highest brand risks** and software/CVE insight counts. Older snapshots without those fields still show **Largest gaps**.
 
 ### People
+
 - Roster with role changes, deactivate, and reactivate.
 - Invite by email with a shareable link. Only owners can assign the owner role.
 
 ### Roles and access
-- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, and Roles. Edit includes View.
+
+- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, Roles, and Software inventory. Edit includes View.
 - Brand access is defined on the role (all brands or selected brands), not on each person.
 - Add custom roles, optionally copying permissions and brand access from an existing role.
 
 ### Accounts
+
 - Email/password sign-in and sign-up.
 - New accounts create an organization, first brand, and a full CSF 2.0 profile for the current period.
-- Demo tenant is seeded with scored assessments, evidence, and a published board snapshot.
+- Demo tenant is seeded with scored assessments, evidence, software inventory, and published board snapshots.
 
 ## Stack
 
@@ -43,7 +69,7 @@ Next.js App Router, Auth.js (credentials JWT), Prisma, and PostgreSQL.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set `AUTH_SECRET`.
+1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. `CVE_SYNC_SECRET` is optional and only needed if you call the daily CVE sync HTTP endpoint.
 2. Start Postgres. Prefer Docker (`docker compose up -d`). If Docker is not installed, run a workspace-local cluster with `npm run db:start`.
 3. Push schema and seed the CSF catalog:
 
@@ -53,9 +79,15 @@ npx prisma db push
 npx prisma db seed
 ```
 
-The seed loads 6 functions, 22 categories, and 106 subcategories, then a demo tenant with scored assessments, evidence, and a published board snapshot.
+The seed loads 6 functions, 22 categories, and 106 subcategories, then a demo tenant with scored assessments, evidence, and published board snapshots.
 
 4. Run the app: `npm run dev`
+
+Optional CVE jobs:
+
+```
+npm run cve:sync
+```
 
 ## Demo login
 
@@ -65,11 +97,11 @@ The seed loads 6 functions, 22 categories, and 106 subcategories, then a demo te
 | Assessor | `analyst@apex.example` | `ChangeMe123!` |
 | Board viewer | `board@apex.example` | `ChangeMe123!` |
 
-Apex Retail is a published 2026-Q3 profile for dashboards and board reports. Apex Wholesale is a lower-coverage draft.
+Apex Retail is a published 2026-Q3 profile for dashboards, software inventory, and board reports. Apex Wholesale is a lower-coverage draft.
 
 ## First use
 
-You can also create a new account, then an organization and brand. That generates a period profile with every CSF 2.0 subcategory. Assess Current vs Target tiers, attach evidence, and publish a frozen board snapshot.
+You can also create a new account, then an organization and brand. That generates a period profile with every CSF 2.0 subcategory. Assess Current vs Target tiers, attach evidence, record software, and publish a frozen board snapshot.
 
 ## Screenshots
 
@@ -85,13 +117,13 @@ Brand list with Current, Target, and coverage, plus creating another brand.
 
 ### Brand dashboard
 
-Live CSO view of NIST CSF 2.0 functions with full names and abbreviations.
+Live CSO view of NIST CSF 2.0 functions, highest brand risks, and software/CVE insights.
 
 ![Apex Retail brand dashboard](docs/screenshots/03-brand-dashboard.png)
 
 ### Navigation
 
-Hamburger menu with Program brand links, Reports, People, and Roles.
+Hamburger menu with each brand’s assessment, evidence, reports, publish, and software inventory links.
 
 ![Hamburger navigation](docs/screenshots/04-navigation.png)
 
@@ -119,17 +151,23 @@ Files, URLs, and notes linked to subcategory assessments.
 
 ![Evidence locker](docs/screenshots/08-evidence.png)
 
-### Board reports
+### Brand reports
 
-Published checkpoints for board viewers.
+Published checkpoints for one brand.
 
-![Board reports list](docs/screenshots/09-reports.png)
+![Apex Retail reports](docs/screenshots/09-reports.png)
 
 ### Board scorecard
 
-Live function scores and largest gaps.
+Frozen function scores, NIST function explanations, and highest brand risks or largest gaps.
 
 ![Board scorecard](docs/screenshots/10-board-scorecard.png)
+
+### Software inventory
+
+Active applications, category filter, collapsed add form, and CSV import/export. Archived items stay hidden until you choose View archived.
+
+![Software inventory](docs/screenshots/13-software-inventory.png)
 
 ### People
 

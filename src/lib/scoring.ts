@@ -1,4 +1,4 @@
-import { CsfTier } from "@prisma/client";
+import { CsfTier, Priority } from "@prisma/client";
 
 export const FUNCTION_ORDER = ["GV", "ID", "PR", "DE", "RS", "RC"] as const;
 
@@ -18,14 +18,44 @@ export const TIER_LABEL: Record<CsfTier, string> = {
 
 export const FUNCTION_META: Record<
   string,
-  { color: string; short: string }
+  { color: string; short: string; description: string }
 > = {
-  GV: { color: "#d4b84a", short: "Govern" },
-  ID: { color: "#4f9fd4", short: "Identify" },
-  PR: { color: "#7b6bc4", short: "Protect" },
-  DE: { color: "#e09a3e", short: "Detect" },
-  RS: { color: "#c45c5c", short: "Respond" },
-  RC: { color: "#4faf78", short: "Recover" },
+  GV: {
+    color: "#d4b84a",
+    short: "Govern",
+    description:
+      "How the organization sets cybersecurity strategy, policy, roles, and oversight so leaders know who is accountable and how risk decisions are made.",
+  },
+  ID: {
+    color: "#4f9fd4",
+    short: "Identify",
+    description:
+      "Understanding what the organization has and what could go wrong: assets, suppliers, threats, and the cybersecurity risks that matter to the business.",
+  },
+  PR: {
+    color: "#7b6bc4",
+    short: "Protect",
+    description:
+      "Safeguards that reduce the chance of an incident, including access control, training, data protection, and secure configuration of systems.",
+  },
+  DE: {
+    color: "#e09a3e",
+    short: "Detect",
+    description:
+      "Finding and analyzing possible attacks and compromises through monitoring so unusual activity is spotted in time to act.",
+  },
+  RS: {
+    color: "#c45c5c",
+    short: "Respond",
+    description:
+      "What the organization does when a cybersecurity incident is confirmed: contain it, communicate, and manage the event.",
+  },
+  RC: {
+    color: "#4faf78",
+    short: "Recover",
+    description:
+      "Restoring systems, data, and operations after an incident and keeping stakeholders informed while the business returns to normal.",
+  },
 };
 
 export function functionDisplayName(code: string, fallbackName?: string | null) {
@@ -51,6 +81,7 @@ export type AssessmentScoreInput = {
   includedInProfile: boolean;
   currentTier: CsfTier | null;
   targetTier: CsfTier | null;
+  currentPriority: Priority | null;
   subcategoryCode: string;
   subcategoryDescription: string;
   functionCode: string;
@@ -79,6 +110,7 @@ export type GapItem = {
   categoryCode: string;
   currentTier: CsfTier | null;
   targetTier: CsfTier | null;
+  currentPriority: Priority | null;
   gap: number;
 };
 
@@ -94,6 +126,42 @@ export type Scorecard = {
   functions: FunctionScore[];
   topGaps: GapItem[];
 };
+
+function priorityRank(priority: Priority | null | undefined) {
+  if (priority === "HIGH") return 2;
+  if (priority === "MEDIUM") return 1;
+  return 0;
+}
+
+export function compareCsfGaps(a: GapItem, b: GapItem) {
+  if (b.gap !== a.gap) return b.gap - a.gap;
+  const partialA = a.currentTier === "PARTIAL" ? 1 : 0;
+  const partialB = b.currentTier === "PARTIAL" ? 1 : 0;
+  if (partialB !== partialA) return partialB - partialA;
+  return priorityRank(b.currentPriority) - priorityRank(a.currentPriority);
+}
+
+export function listCsfGaps(rows: AssessmentScoreInput[], limit = 5): GapItem[] {
+  return rows
+    .filter((row) => row.includedInProfile)
+    .map((row) => {
+      const current = row.currentTier ? TIER_VALUE[row.currentTier] : 0;
+      const target = row.targetTier ? TIER_VALUE[row.targetTier] : 0;
+      return {
+        subcategoryCode: row.subcategoryCode,
+        subcategoryDescription: row.subcategoryDescription,
+        functionCode: row.functionCode,
+        categoryCode: row.categoryCode,
+        currentTier: row.currentTier,
+        targetTier: row.targetTier,
+        currentPriority: row.currentPriority,
+        gap: target - current,
+      };
+    })
+    .filter((item) => item.gap > 0)
+    .sort(compareCsfGaps)
+    .slice(0, limit);
+}
 
 export function computeScorecard(rows: AssessmentScoreInput[]): Scorecard {
   const includedRows = rows.filter((row) => row.includedInProfile);
@@ -156,23 +224,7 @@ export function computeScorecard(rows: AssessmentScoreInput[]): Scorecard {
       .filter((value): value is number => value !== null),
   );
 
-  const topGaps: GapItem[] = includedRows
-    .map((row) => {
-      const current = row.currentTier ? TIER_VALUE[row.currentTier] : 0;
-      const target = row.targetTier ? TIER_VALUE[row.targetTier] : 0;
-      return {
-        subcategoryCode: row.subcategoryCode,
-        subcategoryDescription: row.subcategoryDescription,
-        functionCode: row.functionCode,
-        categoryCode: row.categoryCode,
-        currentTier: row.currentTier,
-        targetTier: row.targetTier,
-        gap: target - current,
-      };
-    })
-    .filter((item) => item.gap > 0)
-    .sort((a, b) => b.gap - a.gap)
-    .slice(0, 5);
+  const topGaps = listCsfGaps(rows, 5);
 
   return {
     overallCurrent,
@@ -192,9 +244,52 @@ export function computeScorecard(rows: AssessmentScoreInput[]): Scorecard {
   };
 }
 
+export type PeriodParts = {
+  year: number;
+  quarter: number;
+};
+
+export function currentQuarter(date = new Date()): number {
+  return Math.floor(date.getMonth() / 3) + 1;
+}
+
 export function currentPeriod(date = new Date()): string {
-  const quarter = Math.floor(date.getMonth() / 3) + 1;
-  return `${date.getFullYear()}-Q${quarter}`;
+  return formatPeriod(date.getFullYear(), currentQuarter(date));
+}
+
+export function formatPeriod(year: number, quarter: number): string {
+  return `${year}-Q${quarter}`;
+}
+
+export function formatPeriodLabel(period: string): string {
+  const parts = parsePeriod(period);
+  if (!parts) return period;
+  return `${parts.year} Q${parts.quarter}`;
+}
+
+export function parsePeriod(period: string | null | undefined): PeriodParts | null {
+  const match = /^(\d{4})-Q([1-4])$/i.exec(String(period ?? "").trim());
+  if (!match) return null;
+  return { year: Number(match[1]), quarter: Number(match[2]) };
+}
+
+export function periodFromForm(formData: FormData): string {
+  const year = Number(formData.get("year"));
+  const quarter = Number(formData.get("quarter"));
+  if (Number.isInteger(year) && year >= 2000 && year <= 2100 && quarter >= 1 && quarter <= 4) {
+    return formatPeriod(year, quarter);
+  }
+  const period = String(formData.get("period") ?? "").trim();
+  return parsePeriod(period) ? period : currentPeriod();
+}
+
+export function periodYearOptions(date = new Date()): number[] {
+  const year = date.getFullYear();
+  const years: number[] = [];
+  for (let value = year - 5; value <= year + 1; value += 1) {
+    years.push(value);
+  }
+  return years;
 }
 
 export function slugify(value: string): string {

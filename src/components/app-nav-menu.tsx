@@ -2,16 +2,87 @@
 
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import type { NavLink } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
-function isActive(pathname: string, href: string) {
-  if (href === "/app") {
-    return pathname === "/app" || pathname.startsWith("/app/brands");
+function isActive(pathname: string, href: string, exact = false) {
+  if (exact || href === "/app") {
+    return pathname === href;
   }
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function brandRoot(path: string) {
+  const match = path.match(/^\/app\/brands\/[^/]+/);
+  return match?.[0] ?? null;
+}
+
+function NavLinkList({
+  links,
+  pathname,
+  depth = 0,
+  onNavigate,
+}: {
+  links: NavLink[];
+  pathname: string;
+  depth?: number;
+  onNavigate: (href: string) => void;
+}) {
+  return (
+    <div
+      className={
+        depth === 0
+          ? "flex flex-col gap-1"
+          : "ml-3 mt-1 flex flex-col gap-0.5 border-l border-[var(--border)] pl-2"
+      }
+    >
+      {links.map((link) => {
+        const children = link.children ?? [];
+        const hasChildren = children.length > 0;
+        const active = isActive(pathname, link.href, hasChildren);
+        return (
+          <div key={`${link.href}:${link.label}`}>
+            <Link
+              href={link.href}
+              prefetch={false}
+              onClick={(event) => {
+                if (
+                  event.metaKey ||
+                  event.ctrlKey ||
+                  event.shiftKey ||
+                  event.altKey ||
+                  event.button !== 0
+                ) {
+                  return;
+                }
+                event.preventDefault();
+                onNavigate(link.href);
+              }}
+              className={cn(
+                "block cursor-pointer rounded-md px-3 text-sm",
+                depth === 0 ? "py-2" : "py-1.5",
+                active
+                  ? "bg-[var(--surface-2)] text-[var(--foreground)]"
+                  : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
+              )}
+            >
+              {link.label}
+            </Link>
+            {hasChildren ? (
+              <NavLinkList
+                links={children}
+                pathname={pathname}
+                depth={depth + 1}
+                onNavigate={onNavigate}
+              />
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function AppNavMenu({
@@ -23,6 +94,7 @@ export function AppNavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const panelId = useId();
 
   useEffect(() => {
@@ -37,6 +109,27 @@ export function AppNavMenu({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+
+  function goTo(href: string) {
+    if (pathname === href) {
+      setOpen(false);
+      return;
+    }
+
+    // App Router can no-op Link/router.push for parent routes (dashboard vs
+    // assessment) and for sibling brand dashboards that share [brandId].
+    const currentBrand = brandRoot(pathname);
+    const nextBrand = brandRoot(href);
+    if (
+      pathname.startsWith(`${href}/`) ||
+      (currentBrand && nextBrand && currentBrand !== nextBrand)
+    ) {
+      window.location.assign(href);
+      return;
+    }
+
+    router.push(href);
+  }
 
   return (
     <div>
@@ -54,7 +147,7 @@ export function AppNavMenu({
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-black/55"
+            className="absolute inset-0 z-0 bg-black/55"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
           />
@@ -66,6 +159,19 @@ export function AppNavMenu({
               <Link
                 href={homeHref}
                 prefetch={false}
+                onClick={(event) => {
+                  if (
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    event.button !== 0
+                  ) {
+                    return;
+                  }
+                  event.preventDefault();
+                  goTo(homeHref);
+                }}
                 className="text-sm font-semibold tracking-tight"
               >
                 Security Plan Manager
@@ -80,49 +186,7 @@ export function AppNavMenu({
               </button>
             </div>
             <div className="mt-6 flex flex-col gap-1">
-              {links.map((link) => {
-                const active = isActive(pathname, link.href);
-                const children = link.children ?? [];
-                return (
-                  <div key={link.href}>
-                    <Link
-                      href={link.href}
-                      prefetch={false}
-                      className={cn(
-                        "block rounded-md px-3 py-2 text-sm",
-                        active
-                          ? "bg-[var(--surface-2)] text-[var(--foreground)]"
-                          : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                    {children.length > 0 ? (
-                      <div className="ml-3 mt-1 flex flex-col gap-0.5 border-l border-[var(--border)] pl-2">
-                        {children.map((child) => {
-                          const childActive =
-                            pathname === child.href || pathname.startsWith(`${child.href}/`);
-                          return (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              prefetch={false}
-                              className={cn(
-                                "rounded-md px-3 py-1.5 text-sm",
-                                childActive
-                                  ? "bg-[var(--surface-2)] text-[var(--foreground)]"
-                                  : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]",
-                              )}
-                            >
-                              {child.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
+              <NavLinkList links={links} pathname={pathname} onNavigate={goTo} />
             </div>
           </nav>
         </div>

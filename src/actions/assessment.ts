@@ -9,7 +9,6 @@ import {
   removeEvidenceFiles,
   storeEvidenceFile,
 } from "@/lib/evidence-storage";
-import { syncLatestSnapshot } from "@/lib/live-scorecard";
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -30,7 +29,7 @@ function parsePriority(value: FormDataEntryValue | null): Priority | null {
     : null;
 }
 
-function revalidateBrand(brandId: string, snapshotId?: string) {
+function revalidateLiveDashboard(brandId: string) {
   revalidatePath("/app", "layout");
   revalidatePath("/app");
   revalidatePath(`/app/brands/${brandId}`);
@@ -38,21 +37,6 @@ function revalidateBrand(brandId: string, snapshotId?: string) {
   revalidatePath(`/app/brands/${brandId}/assess`);
   revalidatePath(`/app/brands/${brandId}/assess/history`);
   revalidatePath(`/app/brands/${brandId}/evidence`);
-  revalidatePath("/app/reports");
-  revalidatePath("/app/reports", "page");
-  if (snapshotId) {
-    revalidatePath(`/app/reports/${snapshotId}`);
-  }
-}
-
-async function persistLiveScores(profileId: string, organizationId: string, brandId: string) {
-  await syncLatestSnapshot(profileId, organizationId);
-  const latest = await prisma.reportSnapshot.findFirst({
-    where: { profileId, organizationId },
-    orderBy: { publishedAt: "desc" },
-    select: { id: true },
-  });
-  revalidateBrand(brandId, latest?.id);
 }
 
 async function recordTierChanges(args: {
@@ -166,11 +150,7 @@ export async function saveAssessmentAction(
     comment: optionalString(formData.get("tierChangeComment")),
   });
 
-  await persistLiveScores(
-    assessment.profileId,
-    membership.organizationId,
-    assessment.profile.brandId,
-  );
+  revalidateLiveDashboard(assessment.profile.brandId);
   return { ok: true };
 }
 
@@ -218,11 +198,7 @@ export async function updateTiersAction(
     comment,
   });
 
-  await persistLiveScores(
-    assessment.profileId,
-    membership.organizationId,
-    assessment.profile.brandId,
-  );
+  revalidateLiveDashboard(assessment.profile.brandId);
   return { ok: true };
 }
 
@@ -290,11 +266,7 @@ export async function addEvidenceAction(
     }
   }
 
-  await persistLiveScores(
-    assessment.profileId,
-    membership.organizationId,
-    assessment.profile.brandId,
-  );
+  revalidateLiveDashboard(assessment.profile.brandId);
   return { ok: true };
 }
 
@@ -317,10 +289,6 @@ export async function deleteEvidenceAction(evidenceId: string): Promise<Assessme
 
   await removeEvidenceFiles(evidence.organizationId, evidence.id);
   await prisma.evidence.delete({ where: { id: evidence.id } });
-  await persistLiveScores(
-    evidence.assessment.profileId,
-    membership.organizationId,
-    evidence.assessment.profile.brandId,
-  );
+  revalidateLiveDashboard(evidence.assessment.profile.brandId);
   return { ok: true };
 }

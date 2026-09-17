@@ -80,10 +80,7 @@ export async function loginAction(
       redirectTo: safeCallback(formData, "/app"),
     });
   } catch (error) {
-    if (error instanceof CredentialsSignin && error.code === "deactivated") {
-      return { error: "This account has been deactivated. Contact an organization owner." };
-    }
-    if (error instanceof AuthError) {
+    if (error instanceof CredentialsSignin || error instanceof AuthError) {
       const code =
         "code" in error && typeof error.code === "string" ? error.code : "";
       if (code === "deactivated") {

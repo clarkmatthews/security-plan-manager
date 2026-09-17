@@ -76,6 +76,11 @@ export const PRODUCT_AREAS = [
     label: "Roles",
     description: "Role permission matrix",
   },
+  {
+    code: "SOFTWARE",
+    label: "Software inventory",
+    description: "Brand software inventory, CVE catalog, matching, and alert history",
+  },
 ] as const;
 
 export type ProductAreaCode = (typeof PRODUCT_AREAS)[number]["code"];
@@ -107,6 +112,7 @@ function mapWith(
     REPORTS: overrides.REPORTS ?? fallback,
     PEOPLE: overrides.PEOPLE ?? fallback,
     ROLES: overrides.ROLES ?? fallback,
+    SOFTWARE: overrides.SOFTWARE ?? fallback,
   };
 }
 
@@ -122,6 +128,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    SOFTWARE: viewOnly,
   }),
   CONTROL_OWNER: mapWith({
     PROGRAM: viewOnly,
@@ -131,6 +138,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    SOFTWARE: viewOnly,
   }),
   AUDITOR: mapWith({
     PROGRAM: viewOnly,
@@ -140,6 +148,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    SOFTWARE: viewOnly,
   }),
   EXEC_VIEWER: mapWith({
     REPORTS: viewOnly,
@@ -178,6 +187,7 @@ export function defaultPermissionMap(role: string): PermissionMap {
     REPORTS: normalizeAccess(source.REPORTS),
     PEOPLE: normalizeAccess(source.PEOPLE),
     ROLES: normalizeAccess(source.ROLES),
+    SOFTWARE: normalizeAccess(source.SOFTWARE),
   };
 }
 
@@ -215,26 +225,69 @@ export function homePath(permissions: PermissionMap) {
 export type NavLink = {
   href: string;
   label: string;
-  children?: { href: string; label: string }[];
+  children?: NavLink[];
 };
+
+function brandNavChildren(
+  permissions: PermissionMap,
+  brandId: string,
+): NavLink[] {
+  const children: NavLink[] = [];
+  if (hasAccess(permissions, "ASSESSMENT", "view")) {
+    children.push({
+      href: `/app/brands/${brandId}/assess`,
+      label: "Open assessment",
+    });
+  }
+  if (hasAccess(permissions, "EVIDENCE", "view")) {
+    children.push({
+      href: `/app/brands/${brandId}/evidence`,
+      label: "Evidence",
+    });
+  }
+  if (hasAccess(permissions, "REPORTS", "view")) {
+    children.push({
+      href: `/app/brands/${brandId}/reports`,
+      label: "Reports",
+    });
+  }
+  if (hasAccess(permissions, "REPORTS", "edit")) {
+    children.push({
+      href: `/app/brands/${brandId}/publish`,
+      label: "Publish snapshot",
+    });
+  }
+  if (hasAccess(permissions, "SOFTWARE", "view")) {
+    children.push({
+      href: `/app/brands/${brandId}/software`,
+      label: "Software inventory",
+    });
+  }
+  return children;
+}
 
 export function navLinksFor(
   permissions: PermissionMap,
   brands: { id: string; name: string }[] = [],
 ): NavLink[] {
   const links: NavLink[] = [];
-  if (hasAccess(permissions, "PROGRAM", "view")) {
+  const canSeeProgram = hasAccess(permissions, "PROGRAM", "view");
+  const canSeeReports = hasAccess(permissions, "REPORTS", "view");
+  if (canSeeProgram || canSeeReports) {
     links.push({
-      href: "/app",
-      label: "Program",
-      children: brands.map((brand) => ({
-        href: `/app/brands/${brand.id}`,
-        label: brand.name,
-      })),
+      href: canSeeProgram ? "/app" : "/app/reports",
+      label: canSeeProgram ? "Program" : "Brands",
+      children: brands.map((brand) => {
+        const children = brandNavChildren(permissions, brand.id);
+        return {
+          href: canSeeProgram
+            ? `/app/brands/${brand.id}`
+            : `/app/brands/${brand.id}/reports`,
+          label: brand.name,
+          children: children.length > 0 ? children : undefined,
+        };
+      }),
     });
-  }
-  if (hasAccess(permissions, "REPORTS", "view")) {
-    links.push({ href: "/app/reports", label: "Reports" });
   }
   if (hasAccess(permissions, "PEOPLE", "view")) {
     links.push({ href: "/app/settings/people", label: "People" });

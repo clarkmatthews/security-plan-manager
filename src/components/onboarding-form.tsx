@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { completeOnboarding } from "@/actions/org";
 import { Input, Label } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
-import { currentPeriod } from "@/lib/scoring";
 
 export function OnboardingForm() {
   const [state, action] = useActionState(completeOnboarding, undefined);
@@ -18,10 +17,6 @@ export function OnboardingForm() {
       <div>
         <Label htmlFor="brandName">First brand or business unit</Label>
         <Input id="brandName" name="brandName" required />
-      </div>
-      <div>
-        <Label htmlFor="period">Assessment period</Label>
-        <Input id="period" name="period" defaultValue={currentPeriod()} required />
       </div>
       {state?.error ? <p className="text-sm text-[#e07a7a]">{state.error}</p> : null}
       <SubmitButton>Create workspace</SubmitButton>

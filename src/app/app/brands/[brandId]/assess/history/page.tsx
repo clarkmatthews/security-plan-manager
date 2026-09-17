@@ -65,7 +65,7 @@ export default async function AssessmentHistoryPage({
         </Link>
         <h1 className="mt-2 text-3xl font-semibold">Assessment history</h1>
         <p className="mt-2 text-[var(--muted)]">
-          {brand.name} · {profile.period} · comments captured when Current or Target
+          {brand.name} · comments captured when Current or Target
           changes
         </p>
       </div>

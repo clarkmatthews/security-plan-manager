@@ -11,7 +11,8 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:start": "node scripts/start-embedded-pg.mjs"
+    "db:start": "node scripts/start-embedded-pg.mjs",
+    "cve:sync": "tsx src/jobs/sync-cves.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

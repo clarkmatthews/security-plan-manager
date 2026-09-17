@@ -1,4 +1,4 @@
-import type { CsfTier, SubcategoryAssessment, Evidence } from "@prisma/client";
+import type { CsfTier, Priority, SubcategoryAssessment, Evidence } from "@prisma/client";
 import { FUNCTION_ORDER, type AssessmentScoreInput } from "@/lib/scoring";
 
 type CatalogSortable = {
@@ -52,6 +52,7 @@ export function toScoreInputs(
     includedInProfile: assessment.includedInProfile,
     currentTier: assessment.currentTier as CsfTier | null,
     targetTier: assessment.targetTier as CsfTier | null,
+    currentPriority: assessment.currentPriority as Priority | null,
     subcategoryCode: assessment.subcategory.code,
     subcategoryDescription: assessment.subcategory.description,
     functionCode: assessment.subcategory.category.function.code,

@@ -15,6 +15,17 @@ enum ProductArea {
   REPORTS
   PEOPLE
   ROLES
+  SOFTWARE
+}
+
+enum SoftwareCategory {
+  SECURITY
+  AI
+  BUSINESS_APPLICATION
+  INFRASTRUCTURE
+  DEVELOPER_TOOL
+  COLLABORATION
+  OTHER
 }
 
 enum ProfileStatus {
@@ -54,6 +65,8 @@ model User {
   evidence        Evidence[]
   snapshots       ReportSnapshot[]
   assessmentChanges AssessmentChange[]
+  softwareAssets    SoftwareAsset[]
+  acknowledgedCveMatches SoftwareCveMatch[] @relation("CveMatchAcknowledgedBy")
 }
 
 model Account {
@@ -109,6 +122,8 @@ model Organization {
   rolePermissions RolePermission[]
   roleBrandScopes RoleBrandScope[]
   organizationRoles OrganizationRole[]
+  softwareAssets    SoftwareAsset[]
+  cveMatches        SoftwareCveMatch[]
 }
 
 model OrganizationRole {
@@ -198,8 +213,10 @@ model Brand {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   profiles     Profile[]
-  access       BrandAccess[]
-  roleAccess   RoleBrandAccess[]
+  access          BrandAccess[]
+  roleAccess      RoleBrandAccess[]
+  softwareAssets  SoftwareAsset[]
+  cveMatches      SoftwareCveMatch[]
 
   @@unique([organizationId, slug])
 }
@@ -267,6 +284,7 @@ model Profile {
   organizationId String
   brandId        String
   period         String
+  asOfDate       DateTime?
   name           String?
   status         ProfileStatus  @default(DRAFT)
   createdAt      DateTime       @default(now())
@@ -379,4 +397,84 @@ model ReportSnapshot {
 
   @@index([organizationId])
   @@index([profileId])
+}
+
+model SoftwareAsset {
+  id             String            @id @default(cuid())
+  organizationId String
+  brandId        String
+  productName    String
+  companyName    String
+  version        String
+  category       SoftwareCategory
+  notes          String?
+  archivedAt     DateTime?
+  createdById    String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brand        Brand              @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  createdBy    User               @relation(fields: [createdById], references: [id])
+  matches      SoftwareCveMatch[]
+
+  @@index([organizationId])
+  @@index([brandId])
+  @@index([brandId, archivedAt])
+}
+
+model CveRecord {
+  id           String    @id @default(cuid())
+  cveId        String    @unique
+  summary      String    @db.Text
+  productsText String    @db.Text
+  publishedAt  DateTime?
+  sourceUrl    String
+  cvssScore    Float?
+  ingestedAt   DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  matches SoftwareCveMatch[]
+
+  @@index([publishedAt])
+  @@index([lastSeenAt])
+}
+
+model CveSyncState {
+  id                 String    @id @default("default")
+  lastSyncedAt       DateTime?
+  lastDeltaFetchTime String?
+  startedAt          DateTime?
+  lastError          String?   @db.Text
+  lastFetched        Int?
+  lastUpserted       Int?
+  lastMatched        Int?
+  lastPruned         Int?
+  lastHistoryFrom    DateTime?
+  lastHistoryTo      DateTime?
+}
+
+model SoftwareCveMatch {
+  id               String    @id @default(cuid())
+  organizationId   String
+  brandId          String
+  softwareAssetId  String
+  cveRecordId      String
+  matchedName      String
+  detectedAt       DateTime  @default(now())
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brand          Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  software       SoftwareAsset @relation(fields: [softwareAssetId], references: [id], onDelete: Cascade)
+  cve            CveRecord     @relation(fields: [cveRecordId], references: [id], onDelete: Cascade)
+  acknowledgedBy User?         @relation("CveMatchAcknowledgedBy", fields: [acknowledgedById], references: [id])
+
+  @@unique([softwareAssetId, cveRecordId])
+  @@index([organizationId])
+  @@index([brandId])
+  @@index([detectedAt])
+  @@index([acknowledgedAt])
 }
