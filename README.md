@@ -9,7 +9,7 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 ### Program and brands
 
 - Create an organization and one or more brands, each with a period profile (for example `2026-Q3`).
-- The hamburger menu lists brands under **Program**. Assessment, evidence, reports, publish, and software inventory sit under each brand.
+- The menu shows brands under **Program**. Assessment, evidence, reports, publish, and software inventory sit under each brand.
 
 ### NIST CSF 2.0 scoring
 
@@ -20,18 +20,16 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 
 ### Highest brand risks
 
-- Live dashboards replace “Largest gaps” with **Highest brand risks**.
+- Live dashboards “Largest gaps” with **Highest brand risks**.
 - NIST CSF Current vs Target gaps are ranked first.
-- Unresolved installed-app CVEs appear only when CVSS is above 7.5, grouped by product so one application cannot fill the list (at most two CVE slots).
+- Unresolved installed-app CVEs appear only when CVSS is above 7.5 (only from a BOD highest risk standpoint), grouped by product so one application cannot fill the list (at most two CVE slots).
 
 ### Software inventory and CVEs
 
 - Per-brand inventory of applications (product, company, version, category, notes).
 - Active products are matched against a rolling 120-day CVE catalog by product name.
-- Archived applications stay in history and are hidden from the default list. Use **View archived** at the bottom of the inventory to open them.
-- Filter the list by category (defaults to **All**). **Add software** is collapsed until you expand it.
 - Export a CSV template of the active list, edit it outside the app, and re-import: new rows are added, rows that keep their `id` are updated, and removed rows are archived.
-- Login alerts surface outstanding matches. **Acknowledge all** acknowledges every outstanding match, not just the preview.
+- Login alerts surface outstanding matches between application in use and CVE's, this also happens if you add an application that has a recent CVE.
 - Dashboard and report insight cards count unique **application + CVE date**, so one product with many same-day CVEs is one exposure, not hundreds.
 
 ### Evidence and history
@@ -44,7 +42,7 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 - Live Current vs Target scores on brand dashboards. Publish a dated snapshot as a frozen checkpoint.
 - Reports are brand-specific and linked under each brand in the menu. Opening a snapshot shows the scorecard as of publish time.
 - Published scorecards include a plain-language explanation of each NIST function (Govern, Identify, Protect, Detect, Respond, Recover) for board readers.
-- New snapshots freeze **Highest brand risks** and software/CVE insight counts. Older snapshots without those fields still show **Largest gaps**.
+- Snapshots freeze **Highest brand risks** and software/CVE insight counts. 
 
 ### People
 
