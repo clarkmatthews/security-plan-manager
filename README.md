@@ -180,3 +180,7 @@ Change roles, deactivate people, and invite teammates. Brand access comes from t
 Add or delete roles, set View/Edit by product area, and choose which brands the role can open.
 
 ![Role permissions and brand access](docs/screenshots/12-roles.png)
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
