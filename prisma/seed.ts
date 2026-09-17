@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { existsSync } from "fs";
 import path from "path";
 import { CSF_CORE, catalogCounts, type CsfCatalog } from "./data/csf-core";
+import { isDemoLoginEnabled } from "../src/lib/demo";
 
 const prisma = new PrismaClient();
 
@@ -211,8 +212,12 @@ async function seed() {
   ]);
   console.log(`Catalog in database: ${functions}/${categories}/${subcategories}`);
 
-  const { seedDemoWorkspace } = await import("./seed-demo");
-  await seedDemoWorkspace(prisma);
+  if (isDemoLoginEnabled()) {
+    const { seedDemoWorkspace } = await import("./seed-demo");
+    await seedDemoWorkspace(prisma);
+  } else {
+    console.log("Skipping demo workspace seed (set DEMO_LOGIN=1 to include it).");
+  }
 }
 
 seed()

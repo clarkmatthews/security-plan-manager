@@ -56,11 +56,19 @@ export type SoftwareImportPlan = {
   archives: string[];
 };
 
-function csvEscape(value: string) {
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+function neutralizeCsvCell(value: string) {
+  if (/^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
   }
   return value;
+}
+
+function csvEscape(value: string) {
+  const safe = neutralizeCsvCell(value);
+  if (/[",\n\r]/.test(safe)) {
+    return `"${safe.replace(/"/g, '""')}"`;
+  }
+  return safe;
 }
 
 export function serializeSoftwareCsv(assets: SoftwareCsvAsset[]) {

@@ -1,6 +1,8 @@
 import { readFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import { requireMembership } from "@/lib/auth-guard";
+import { hasBrandAccess } from "@/lib/brand-access";
+import { attachmentDisposition } from "@/lib/content-disposition";
 import { prisma } from "@/lib/prisma";
 import { evidenceFilePath } from "@/lib/evidence-storage";
 
@@ -19,9 +21,13 @@ export async function GET(
       id,
       organizationId: membership.organizationId,
     },
+    include: { assessment: { include: { profile: { select: { brandId: true } } } } },
   });
 
-  if (!evidence?.storedName) {
+  if (
+    !evidence?.storedName ||
+    !hasBrandAccess(membership, evidence.assessment.profile.brandId)
+  ) {
     return new NextResponse("Not found", { status: 404 });
   }
 
@@ -33,7 +39,9 @@ export async function GET(
       headers: {
         "Content-Type": evidence.mimeType ?? "application/octet-stream",
         "Content-Length": String(bytes.byteLength),
-        "Content-Disposition": `attachment; filename="${evidence.fileName ?? evidence.storedName}"`,
+        "Content-Disposition": attachmentDisposition(
+          evidence.fileName ?? evidence.storedName,
+        ),
       },
     });
   } catch {

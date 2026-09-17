@@ -9,6 +9,7 @@ import {
   saveAssessmentAction,
   updateTiersAction,
 } from "@/actions/assessment";
+import { SafeExternalLink } from "@/components/safe-external-link";
 import { Button, Input, Label, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 import { compareByCatalog } from "@/lib/catalog";
@@ -672,14 +673,12 @@ function AssessmentDetail({
                   </a>
                 ) : null}
                 {item.url ? (
-                  <a
+                  <SafeExternalLink
                     href={item.url}
                     className="mt-1 block text-[var(--accent)] underline"
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     {item.url}
-                  </a>
+                  </SafeExternalLink>
                 ) : null}
                 {item.notes ? (
                   <p className="mt-1 text-[var(--muted)]">{item.notes}</p>

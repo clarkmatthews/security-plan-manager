@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { SafeExternalLink } from "@/components/safe-external-link";
 import { Card } from "@/components/ui";
 
 export default async function EvidencePage({
@@ -68,14 +69,12 @@ export default async function EvidencePage({
                 </a>
               ) : null}
               {item.url ? (
-                <a
+                <SafeExternalLink
                   href={item.url}
                   className="mt-1 block text-sm text-[var(--accent)] underline"
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   {item.url}
-                </a>
+                </SafeExternalLink>
               ) : null}
               {item.notes ? (
                 <p className="mt-2 text-sm text-[var(--muted)]">{item.notes}</p>

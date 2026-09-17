@@ -9,6 +9,7 @@ import {
   removeEvidenceFiles,
   storeEvidenceFile,
 } from "@/lib/evidence-storage";
+import { parseSafeHttpUrl } from "@/lib/safe-url";
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -216,11 +217,15 @@ export async function addEvidenceAction(
   const file = fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
   const title =
     String(formData.get("title") ?? "").trim() || (file ? file.name : "");
-  const url = optionalString(formData.get("url"));
+  const rawUrl = optionalString(formData.get("url"));
   const notes = optionalString(formData.get("notes"));
   if (!assessmentId || !title) {
     return { error: "Evidence title is required." };
   }
+  if (rawUrl && !parseSafeHttpUrl(rawUrl)) {
+    return { error: "Evidence URL must start with http:// or https://." };
+  }
+  const url = rawUrl ? parseSafeHttpUrl(rawUrl) : null;
   if (!file && !url && !notes) {
     return { error: "Add a file, URL, or note." };
   }

@@ -69,7 +69,7 @@ Next.js App Router, Auth.js (credentials JWT), Prisma, and PostgreSQL.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. `CVE_SYNC_SECRET` is optional and only needed if you call the daily CVE sync HTTP endpoint.
+1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the daily CVE sync HTTP endpoint. Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
 2. Start Postgres. Prefer Docker (`docker compose up -d`). If Docker is not installed, run a workspace-local cluster with `npm run db:start`.
 3. Push schema and seed the CSF catalog:
 
@@ -90,6 +90,8 @@ npm run cve:sync
 ```
 
 ## Demo login
+
+Shown on `/login` in development, or when `DEMO_LOGIN=1`. Do not seed or expose these accounts on a public host.
 
 | Role | Email | Password |
 | --- | --- | --- |

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { attachmentDisposition } from "@/lib/content-disposition";
 import { serializeSoftwareCsv } from "@/lib/software-csv";
 import { slugify } from "@/lib/scoring";
 
@@ -38,7 +39,7 @@ export async function GET(
   return new NextResponse(serializeSoftwareCsv(assets), {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename="${filename}"`,
+      "content-disposition": attachmentDisposition(filename),
       "cache-control": "no-store",
     },
   });
