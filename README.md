@@ -30,7 +30,7 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 - Active products are matched against a rolling 120-day CVE catalog by product name.
 - Export a CSV template of the active list, edit it outside the app, and re-import: new rows are added, rows that keep their `id` are updated, and removed rows are archived.
 - Login alerts surface outstanding matches between application in use and CVE's, this also happens if you add an application that has a recent CVE.
-- Dashboard and report insight cards count unique **application + CVE date**, so one product with many same-day CVEs is one exposure, not hundreds.
+- Dashboard and report insight cards count unique **application + CVE date**, so one product with many same-day CVEs is one exposure, not hundreds. The actual CVE details are still visible within the application showing all the vulnerabilities.
 
 ### Evidence and history
 
