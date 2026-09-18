@@ -185,6 +185,10 @@ Add or delete roles, set View/Edit by product area, and choose which brands the 
 
 ![Role permissions and brand access](docs/screenshots/12-roles.png)
 
+### Use and Intent
+
+This is intended to run inside a brand network, not really focused on an internet deployment. It should also not be considered a finished product. This is a work in progress which likely has bugs that I will continue to work through. Though the basic functionality seems to test and work as designed. Hope you gain something from this project, even if it's just a starting point for your project.
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE).
