@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { SoftwareInventory } from "@/components/software-inventory";
 
 export default async function SoftwareInventoryPage({
@@ -30,7 +31,9 @@ export default async function SoftwareInventoryPage({
           <Link href={`/app/brands/${brand.id}`} prefetch={false} className="text-sm text-[var(--muted)]">
             ← {brand.name} dashboard
           </Link>
-          <h1 className="mt-2 text-3xl font-semibold">Software inventory</h1>
+          <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="software">
+            Software inventory
+          </HeadingWithHelp>
           <p className="mt-2 max-w-2xl text-[var(--muted)]">
             Applications used by {brand.name}. Active products are matched against newly
             ingested CVEs by product name. Archived software stays in history but is not

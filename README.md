@@ -47,13 +47,17 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 ### People
 
 - Roster with role changes, deactivate, and reactivate.
-- Invite by email with a shareable link. Only owners can assign the owner role.
+- Invite by email with a shareable link (SMTP is optional on Config). Only owners can assign the owner role.
 
 ### Roles and access
 
-- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, Roles, and Software inventory. Edit includes View.
+- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, Roles, Config, and Software inventory. Edit includes View.
 - Brand access is defined on the role (all brands or selected brands), not on each person.
 - Add custom roles, optionally copying permissions and brand access from an existing role.
+
+### Config
+
+- Deployment-wide SMTP, CVE catalog retention, CVE sync interval, and invite expiry. Not brand-specific. Opened from the hamburger after Roles.
 
 ### Accounts
 
@@ -67,7 +71,7 @@ Next.js App Router, Auth.js (credentials JWT), Prisma, and PostgreSQL.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the CVE sync HTTP endpoint. `CVE_SYNC_INTERVAL_HOURS` defaults to `24` (1–168). Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
+1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the CVE sync HTTP endpoint. Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
 2. Start Postgres. Prefer Docker (`docker compose up -d`). If Docker is not installed, run a workspace-local cluster with `npm run db:start`.
 3. Push schema and seed the CSF catalog:
 
@@ -81,13 +85,13 @@ The seed loads 6 functions, 22 categories, and 106 subcategories, then a demo te
 
 4. Run the app: `npm run dev`
 
-Optional CVE jobs. The GitHub `cvelistV5` delta is also pulled on the first `/app` visit after `CVE_SYNC_INTERVAL_HOURS` (default 24). For a clocked pull while the app is running:
+Optional CVE jobs. The GitHub `cvelistV5` delta is also pulled on the first `/app` visit after the Config sync interval (default 24 hours). For a clocked pull while the app is running:
 
 ```
 npm run cve:cron
 ```
 
-That process syncs immediately, then every X hours. One-off: `npm run cve:sync`.
+That process syncs immediately, then every X hours from Config. One-off: `npm run cve:sync`.
 
 An external crontab or host scheduler can POST to `/api/cron/cve-sync` with `Authorization: Bearer $CVE_SYNC_SECRET`. That run is forced unless you pass `?force=0`.
 

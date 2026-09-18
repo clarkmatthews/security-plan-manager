@@ -1,10 +1,13 @@
 "use server";
 
 import { randomBytes } from "crypto";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { unstable_update } from "@/auth";
+import { getAppConfig, inviteExpiryDays, isSmtpReady } from "@/lib/app-config";
 import { requireMembership, requireSession } from "@/lib/auth-guard";
+import { sendAppEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { isOwnerRole } from "@/lib/rbac";
 
@@ -13,7 +16,21 @@ const inviteSchema = z.object({
   role: z.string().min(1).max(48),
 });
 
-export type InviteState = { error?: string; ok?: boolean; token?: string } | undefined;
+export type InviteState =
+  | {
+      error?: string;
+      ok?: boolean;
+      token?: string;
+      mailed?: boolean;
+      mailError?: string;
+    }
+  | undefined;
+
+function requestOrigin(headerList: Headers) {
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "localhost:3000";
+  const proto = headerList.get("x-forwarded-proto") ?? "http";
+  return `${proto}://${host}`;
+}
 
 export async function createInviteAction(
   _prev: InviteState,
@@ -49,7 +66,8 @@ export async function createInviteAction(
   }
 
   const token = randomBytes(24).toString("hex");
-  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+  const days = await inviteExpiryDays();
+  const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
   await prisma.invite.create({
     data: {
@@ -62,7 +80,26 @@ export async function createInviteAction(
     },
   });
 
-  return { ok: true, token };
+  const config = await getAppConfig();
+  let mailed = false;
+  let mailError: string | undefined;
+  if (isSmtpReady(config)) {
+    const origin = requestOrigin(await headers());
+    const inviteUrl = `${origin}/invite/${token}`;
+    const result = await sendAppEmail(config, {
+      to: parsed.data.email.toLowerCase().trim(),
+      subject: "Invitation to Security Plan Manager",
+      text: [
+        "You have been invited to Security Plan Manager.",
+        `Open this link to join: ${inviteUrl}`,
+        `This invite expires in ${days} day${days === 1 ? "" : "s"}.`,
+      ].join("\n\n"),
+    });
+    mailed = result.ok;
+    if (!result.ok) mailError = result.error;
+  }
+
+  return { ok: true, token, mailed, mailError };
 }
 
 export async function acceptInviteAction(token: string) {

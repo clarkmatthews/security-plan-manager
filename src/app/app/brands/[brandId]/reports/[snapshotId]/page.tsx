@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { FunctionScores, HighestBrandRisks, LargestGaps, ScoreOverview } from "@/components/score-overview";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { SoftwareInsightsCards } from "@/components/software-insights";
 import { formatPeriodLabel } from "@/lib/scoring";
 import { parseFrozenSnapshot } from "@/lib/snapshot";
@@ -49,7 +50,9 @@ export default async function BrandReportSnapshotPage({
           {frozen.brandName ?? snapshot.profile.brand.name} · {formatPeriodLabel(frozen.period)} ·
           published {snapshot.publishedAt.toLocaleString()}
         </p>
-        <h1 className="text-3xl font-semibold">Board scorecard</h1>
+        <HeadingWithHelp className="text-3xl font-semibold" topic="boardScorecard">
+          Board scorecard
+        </HeadingWithHelp>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
           Frozen point-in-time copy of the live dashboard at publish. Later assessment
           changes do not update this report.

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { formatTierValue } from "@/lib/scoring";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 
 const FIELD_LABEL = {
@@ -63,7 +64,9 @@ export default async function AssessmentHistoryPage({
         >
           ← Organizational profile
         </Link>
-        <h1 className="mt-2 text-3xl font-semibold">Assessment history</h1>
+        <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="history">
+          Assessment history
+        </HeadingWithHelp>
         <p className="mt-2 text-[var(--muted)]">
           {brand.name} · comments captured when Current or Target
           changes

@@ -1,4 +1,4 @@
-import { cveSyncIntervalHours, cveSyncIntervalMs } from "../lib/cve-constants";
+import { cveSyncIntervalHours } from "../lib/app-config";
 import { syncCves } from "../lib/cve-sync";
 
 let stopped = false;
@@ -20,15 +20,16 @@ async function sleep(ms: number) {
 }
 
 async function main() {
-  const hours = cveSyncIntervalHours();
-  console.log(`CVE GitHub delta cron: every ${hours} hour(s). Ctrl+C to stop.`);
+  const hours = await cveSyncIntervalHours();
+  console.log(`CVE GitHub delta cron: every ${hours} hour(s) from Config. Ctrl+C to stop.`);
 
   while (!stopped) {
     try {
+      const intervalHours = await cveSyncIntervalHours();
       const result = await syncCves({ force: true });
       console.log(
         JSON.stringify(
-          { at: new Date().toISOString(), intervalHours: hours, ...result },
+          { at: new Date().toISOString(), intervalHours, ...result },
           null,
           2,
         ),
@@ -37,7 +38,7 @@ async function main() {
       console.error("CVE cron sync failed", error);
     }
     if (stopped) break;
-    await sleep(cveSyncIntervalMs());
+    await sleep((await cveSyncIntervalHours()) * 60 * 60 * 1000);
   }
 }
 

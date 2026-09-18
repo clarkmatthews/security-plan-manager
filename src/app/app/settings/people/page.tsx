@@ -3,6 +3,7 @@ import { requireArea } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { InviteForm } from "@/components/invite-form";
 import { PeopleRoster } from "@/components/people-roster";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 import { listOrganizationRoles } from "@/lib/org-roles";
 import { roleDisplayName } from "@/lib/rbac";
@@ -33,7 +34,9 @@ export default async function PeoplePage() {
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-semibold">People</h1>
+          <HeadingWithHelp className="text-3xl font-semibold" topic="people">
+            People
+          </HeadingWithHelp>
           <p className="mt-2 text-[var(--muted)]">
             Change roles or deactivate people. Brand access comes from the role on the Roles page.
           </p>

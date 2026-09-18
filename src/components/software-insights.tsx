@@ -1,11 +1,14 @@
 import { Card } from "@/components/ui";
+import { HeadingWithHelp } from "@/components/help-tip";
 import type { SoftwareInsights } from "@/lib/software-insights";
 
 export function SoftwareInsightsCards({ insights }: { insights: SoftwareInsights }) {
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-lg font-medium">Software and CVE insights</h2>
+        <HeadingWithHelp as="h2" topic="softwareInsights" className="text-lg font-medium">
+          Software and CVE insights
+        </HeadingWithHelp>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Active applications for this brand. CVE counts are unique application + CVE
           date, so one product with many same-day CVEs is one exposure.

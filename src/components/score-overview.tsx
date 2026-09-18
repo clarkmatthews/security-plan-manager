@@ -1,25 +1,26 @@
 import Link from "next/link";
 import { FUNCTION_META, formatCompletion, formatScore, functionLabel, TIER_LABEL, type FunctionScore, type GapItem, type Scorecard } from "@/lib/scoring";
 import { Card } from "@/components/ui";
+import { HeadingWithHelp, WidgetLabel } from "@/components/help-tip";
 import type { BrandRisk } from "@/lib/brand-risks";
 
 export function ScoreOverview({ scorecard }: { scorecard: Scorecard }) {
   return (
     <div className="grid gap-4 md:grid-cols-4">
       <Card>
-        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Overall current</div>
+        <WidgetLabel topic="overallCurrent">Overall current</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">{formatScore(scorecard.overallCurrent)}</div>
         <div className="mt-1 text-sm text-[var(--muted)]">Derived 0–100 from CSF Tiers</div>
       </Card>
       <Card>
-        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Overall target</div>
+        <WidgetLabel topic="overallTarget">Overall target</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">{formatScore(scorecard.overallTarget)}</div>
         <div className="mt-1 text-sm text-[var(--muted)]">
           Gap to target {scorecard.overallGap === null ? "—" : Math.round(scorecard.overallGap)}
         </div>
       </Card>
       <Card>
-        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Coverage</div>
+        <WidgetLabel topic="coverage">Coverage</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">
           {formatCompletion(scorecard.overallCurrent, scorecard.overallTarget)}
         </div>
@@ -29,7 +30,7 @@ export function ScoreOverview({ scorecard }: { scorecard: Scorecard }) {
         </div>
       </Card>
       <Card>
-        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Evidence</div>
+        <WidgetLabel topic="evidenceCount">Evidence</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">{scorecard.evidenceCount}</div>
         <div className="mt-1 text-sm text-[var(--muted)]">Artifacts linked to outcomes</div>
       </Card>
@@ -47,6 +48,10 @@ export function FunctionScores({
   showDescriptions?: boolean;
 }) {
   return (
+    <section className="space-y-4">
+      <HeadingWithHelp as="h2" topic="functionComplete" className="text-lg font-medium">
+        NIST functions
+      </HeadingWithHelp>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {functions.map((fn) => {
         const meta = FUNCTION_META[fn.code];
@@ -104,6 +109,7 @@ export function FunctionScores({
         );
       })}
     </div>
+    </section>
   );
 }
 
@@ -154,7 +160,9 @@ export function HighestBrandRisks({
 }) {
   return (
     <Card>
-      <h2 className="text-lg font-medium">Highest brand risks</h2>
+      <HeadingWithHelp as="h2" topic="highestBrandRisks" className="text-lg font-medium">
+        Highest brand risks
+      </HeadingWithHelp>
       <p className="mt-1 mb-4 text-sm text-[var(--muted)]">
         NIST CSF Current vs Target gaps first. Unresolved installed-app CVE.
       </p>

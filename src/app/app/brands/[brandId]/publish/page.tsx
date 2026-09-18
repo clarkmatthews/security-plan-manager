@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { currentPeriod } from "@/lib/scoring";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 import { PublishReportForm } from "@/components/publish-report-form";
 
@@ -39,7 +40,9 @@ export default async function PublishSnapshotPage({
         <Link href={`/app/brands/${brand.id}`} prefetch={false} className="text-sm text-[var(--muted)]">
           ← {brand.name} dashboard
         </Link>
-        <h1 className="mt-2 text-3xl font-semibold">Publish board snapshot</h1>
+        <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="publish">
+          Publish board snapshot
+        </HeadingWithHelp>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
           Choose the year and quarter this report represents, then save a frozen copy of
           the live {brand.name} dashboard for the board.

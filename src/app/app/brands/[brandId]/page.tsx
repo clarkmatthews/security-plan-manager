@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { computeScorecard } from "@/lib/scoring";
 import { toScoreInputs } from "@/lib/catalog";
 import { FunctionScores, HighestBrandRisks, ScoreOverview } from "@/components/score-overview";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { SoftwareInsightsCards } from "@/components/software-insights";
 import { computeSoftwareInsights } from "@/lib/software-insights";
 import { computeBrandRisks } from "@/lib/brand-risks";
@@ -58,7 +59,9 @@ export default async function BrandDashboardPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold">{brand.name}</h1>
+        <HeadingWithHelp className="text-3xl font-semibold" topic="brandDashboard">
+          {brand.name}
+        </HeadingWithHelp>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
           Live CISO view of NIST CSF 2.0 Current vs Target. Scores update whenever the
           organizational profile assessment changes.

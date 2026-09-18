@@ -15,6 +15,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { compareByCatalog } from "@/lib/catalog";
 import { FUNCTION_META, FUNCTION_ORDER, TIER_LABEL, TIER_VALUE, formatTierValue, isFunctionCode } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
+import { HelpTip } from "@/components/help-tip";
 
 export type EvidenceItem = {
   id: string;
@@ -200,7 +201,12 @@ export function AssessmentNavigator({
             <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-wide text-[var(--muted)]">
               <tr>
                 <th className="rounded-tl-xl px-4 py-3">Outcome</th>
-                <th className="px-4 py-3">Current</th>
+                <th className="px-4 py-3">
+                  <span className="inline-flex items-center gap-1">
+                    Current
+                    <HelpTip topic="assessmentTiers" />
+                  </span>
+                </th>
                 <th className="px-4 py-3">Target</th>
                 <th className="rounded-tr-xl px-4 py-3">Gap</th>
               </tr>

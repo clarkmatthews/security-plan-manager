@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui";
 import { AcknowledgeMatchButton } from "@/components/acknowledge-match-button";
 import { CveHistoryForm } from "@/components/cve-history-form";
-import { CVE_RETENTION_DAYS } from "@/lib/cve-constants";
+import { HeadingWithHelp } from "@/components/help-tip";
+import { getAppConfig } from "@/lib/app-config";
 
 const CATALOG_PAGE_SIZE = 50;
 
@@ -38,7 +39,7 @@ export default async function SoftwareCveHistoryPage({
   const canEdit = membership.permissions.SOFTWARE.edit;
   const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
 
-  const [matches, catalog, catalogTotal, syncState] = await Promise.all([
+  const [matches, catalog, catalogTotal, syncState, appConfig] = await Promise.all([
     showCatalog
       ? Promise.resolve([])
       : prisma.softwareCveMatch.findMany({
@@ -61,7 +62,9 @@ export default async function SoftwareCveHistoryPage({
       : Promise.resolve([]),
     showCatalog ? prisma.cveRecord.count() : Promise.resolve(0),
     prisma.cveSyncState.findUnique({ where: { id: "default" } }),
+    getAppConfig(),
   ]);
+  const cveRetentionDays = appConfig.cveRetentionDays;
 
   const catalogPages = Math.max(1, Math.ceil(catalogTotal / CATALOG_PAGE_SIZE));
   const matchesHref = `/app/brands/${brand.id}/software/cves`;
@@ -77,9 +80,11 @@ export default async function SoftwareCveHistoryPage({
         >
           ← {brand.name} software inventory
         </Link>
-        <h1 className="mt-2 text-3xl font-semibold">CVE history</h1>
+        <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="cveHistory">
+          CVE history
+        </HeadingWithHelp>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">
-          Matches between {brand.name} software and the rolling {CVE_RETENTION_DAYS}-day
+          Matches between {brand.name} software and the rolling {cveRetentionDays}-day
           CVE catalog. Switch to all ingested CVEs to inspect the shared feed.
         </p>
       </div>
@@ -114,9 +119,9 @@ export default async function SoftwareCveHistoryPage({
           <h2 className="mb-1 text-lg font-medium">Load prior CVE history</h2>
           <p className="mb-4 text-sm text-[var(--muted)]">
             Pull a published-date range into Postgres, match active software, and drop
-            records older than {CVE_RETENTION_DAYS} days.
+            records older than {cveRetentionDays} days.
           </p>
-          <CveHistoryForm brandId={brand.id} />
+          <CveHistoryForm brandId={brand.id} retentionDays={cveRetentionDays} />
           {syncState ? (
             <div className="mt-4 space-y-1 text-xs text-[var(--muted)]">
               {syncState.startedAt ? (
@@ -154,7 +159,7 @@ export default async function SoftwareCveHistoryPage({
           <>
             <p className="text-sm text-[var(--muted)]">
               {catalogTotal} CVE{catalogTotal === 1 ? "" : "s"} in the last{" "}
-              {CVE_RETENTION_DAYS} days.
+              {cveRetentionDays} days.
             </p>
             <div className="space-y-3">
               {catalog.map((record) => (

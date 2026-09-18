@@ -78,6 +78,11 @@ export const PRODUCT_AREAS = [
     description: "Role permission matrix",
   },
   {
+    code: "CONFIG",
+    label: "Config",
+    description: "System email and CVE settings",
+  },
+  {
     code: "SOFTWARE",
     label: "Software inventory",
     description: "Brand software inventory, CVE catalog, matching, and alert history",
@@ -113,6 +118,7 @@ function mapWith(
     REPORTS: overrides.REPORTS ?? fallback,
     PEOPLE: overrides.PEOPLE ?? fallback,
     ROLES: overrides.ROLES ?? fallback,
+    CONFIG: overrides.CONFIG ?? fallback,
     SOFTWARE: overrides.SOFTWARE ?? fallback,
   };
 }
@@ -130,6 +136,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    CONFIG: none,
     SOFTWARE: viewOnly,
   }),
   CONTROL_OWNER: mapWith({
@@ -140,6 +147,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    CONFIG: none,
     SOFTWARE: viewOnly,
   }),
   AUDITOR: mapWith({
@@ -150,6 +158,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
     REPORTS: viewOnly,
     PEOPLE: viewOnly,
     ROLES: none,
+    CONFIG: none,
     SOFTWARE: viewOnly,
   }),
   EXEC_VIEWER: mapWith({
@@ -190,6 +199,7 @@ export function defaultPermissionMap(role: string): PermissionMap {
     REPORTS: normalizeAccess(source.REPORTS),
     PEOPLE: normalizeAccess(source.PEOPLE),
     ROLES: normalizeAccess(source.ROLES),
+    CONFIG: normalizeAccess(source.CONFIG),
     SOFTWARE: normalizeAccess(source.SOFTWARE),
   };
 }
@@ -222,6 +232,7 @@ export function homePath(permissions: PermissionMap) {
   if (hasAccess(permissions, "REPORTS", "view")) return "/app/reports";
   if (hasAccess(permissions, "PEOPLE", "view")) return "/app/settings/people";
   if (hasAccess(permissions, "ROLES", "view")) return "/app/settings/roles";
+  if (hasAccess(permissions, "CONFIG", "view")) return "/app/settings/config";
   return "/app/reports";
 }
 
@@ -297,6 +308,9 @@ export function navLinksFor(
   }
   if (hasAccess(permissions, "ROLES", "view")) {
     links.push({ href: "/app/settings/roles", label: "Roles" });
+  }
+  if (hasAccess(permissions, "CONFIG", "view")) {
+    links.push({ href: "/app/settings/config", label: "Config" });
   }
   return links;
 }

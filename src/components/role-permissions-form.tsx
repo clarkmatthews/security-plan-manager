@@ -15,6 +15,7 @@ import {
   type RolePermissionMatrix,
 } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+import { HeadingWithHelp, HelpTip } from "@/components/help-tip";
 import type { RoleBrandScopeMap } from "@/lib/brand-access";
 import type { OrgRole } from "@/lib/org-roles";
 
@@ -134,7 +135,12 @@ export function RolePermissionsForm({
           <table className="w-full text-left text-sm">
             <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-wide text-[var(--muted)]">
               <tr>
-                <th className="px-4 py-3">Area</th>
+                <th className="px-4 py-3">
+                  <span className="inline-flex items-center gap-1 normal-case tracking-normal">
+                    Area
+                    <HelpTip topic="rolesMatrix" />
+                  </span>
+                </th>
                 {ACCESS_MODES.map((mode) => (
                   <th key={mode.code} className="px-4 py-3">
                     {mode.label}
@@ -187,7 +193,9 @@ export function RolePermissionsForm({
 
         {brands.length > 0 ? (
           <div className="rounded-xl border border-[var(--border)] p-4">
-            <h2 className="font-medium">Brand access</h2>
+            <HeadingWithHelp as="h2" topic="brandAccess" className="font-medium">
+              Brand access
+            </HeadingWithHelp>
             <p className="mt-1 mb-4 text-sm text-[var(--muted)]">
               People with {selectedLabel} can open these programs.
             </p>

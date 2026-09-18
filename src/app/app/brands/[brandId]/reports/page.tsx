@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hasAccess } from "@/lib/rbac";
 import { formatPeriodLabel, formatScore } from "@/lib/scoring";
 import { parseFrozenSnapshot } from "@/lib/snapshot";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 
 export default async function BrandReportsPage({
@@ -49,9 +50,12 @@ export default async function BrandReportsPage({
             ← {brand.name} dashboard
           </Link>
         ) : null}
-        <h1 className={`${canSeeDashboard ? "mt-2" : ""} text-3xl font-semibold`}>
+        <HeadingWithHelp
+          className={`${canSeeDashboard ? "mt-2" : ""} text-3xl font-semibold`}
+          topic="reports"
+        >
           {brand.name} reports
-        </h1>
+        </HeadingWithHelp>
         <p className="mt-2 text-[var(--muted)]">
           Published snapshots are frozen copies of the {brand.name} dashboard. Assessment
           changes after publish stay on the working profile only.

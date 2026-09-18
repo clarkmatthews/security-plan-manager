@@ -15,6 +15,7 @@ enum ProductArea {
   REPORTS
   PEOPLE
   ROLES
+  CONFIG
   SOFTWARE
 }
 
@@ -439,6 +440,21 @@ model CveRecord {
 
   @@index([publishedAt])
   @@index([lastSeenAt])
+}
+
+model AppConfig {
+  id                   String   @id @default("default")
+  smtpHost             String?
+  smtpPort             Int      @default(587)
+  smtpSecure           Boolean  @default(false)
+  smtpUser             String?
+  smtpPassword         String?  @db.Text
+  smtpFromName         String?
+  smtpFromEmail        String?
+  cveRetentionDays     Int      @default(120)
+  cveSyncIntervalHours Int      @default(24)
+  inviteExpiryDays     Int      @default(14)
+  updatedAt            DateTime @updatedAt
 }
 
 model CveSyncState {

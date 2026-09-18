@@ -41,6 +41,11 @@ export function InviteForm({
       {inviteUrl ? (
         <p className="text-sm text-[#4faf78]">
           Invite created. Share this link: {inviteUrl}
+          {state?.mailed
+            ? " An email was also sent."
+            : state?.mailError
+              ? ` Email was not sent (${state.mailError}). Copy the link.`
+              : " Email was not sent because SMTP is not configured. Copy the link."}
         </p>
       ) : null}
       <SubmitButton>Create invite</SubmitButton>

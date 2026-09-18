@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { SafeExternalLink } from "@/components/safe-external-link";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 
 export default async function EvidencePage({
@@ -41,7 +42,9 @@ export default async function EvidencePage({
         <Link href={`/app/brands/${brand.id}`} className="text-sm text-[var(--muted)]">
           ← {brand.name} dashboard
         </Link>
-        <h1 className="mt-2 text-3xl font-semibold">Evidence</h1>
+        <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="evidence">
+          Evidence
+        </HeadingWithHelp>
         <p className="mt-2 text-[var(--muted)]">
           Files, URLs, and notes linked to CSF subcategory assessments.
         </p>

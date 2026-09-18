@@ -5,6 +5,7 @@ import { brandWhereFor } from "@/lib/brand-access";
 import { computeScorecard, formatCompletion, formatScore } from "@/lib/scoring";
 import { toScoreInputs } from "@/lib/catalog";
 import { CreateBrandForm } from "@/components/create-brand-form";
+import { HeadingWithHelp } from "@/components/help-tip";
 import { Card } from "@/components/ui";
 
 export default async function AppHomePage() {
@@ -34,7 +35,9 @@ export default async function AppHomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold">Cybersecurity program</h1>
+        <HeadingWithHelp className="text-3xl font-semibold" topic="program">
+          Cybersecurity program
+        </HeadingWithHelp>
         <p className="mt-2 text-[var(--muted)]">
           Brands roll up Current vs Target NIST CSF 2.0 profiles for CISO and board reporting.
         </p>

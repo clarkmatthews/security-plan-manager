@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { compareByCatalog } from "@/lib/catalog";
 import { isFunctionCode } from "@/lib/scoring";
 import { AssessmentNavigator } from "@/components/assessment-navigator";
+import { HeadingWithHelp } from "@/components/help-tip";
 
 export default async function AssessPage({
   params,
@@ -114,7 +115,9 @@ export default async function AssessPage({
           <Link href={`/app/brands/${brand.id}`} prefetch={false} className="text-sm text-[var(--muted)]">
             ← {brand.name} dashboard
           </Link>
-          <h1 className="mt-2 text-3xl font-semibold">Organizational profile</h1>
+          <HeadingWithHelp className="mt-2 text-3xl font-semibold" topic="assessment">
+            Organizational profile
+          </HeadingWithHelp>
           <p className="mt-2 text-[var(--muted)]">
             {assessments.length} CSF 2.0 outcomes
           </p>
