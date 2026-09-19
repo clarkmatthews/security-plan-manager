@@ -5,6 +5,7 @@ import {
   type SoftwareInsights,
 } from "@/lib/software-insights";
 import { parseBrandRisks, type BrandRisk } from "@/lib/brand-risks";
+import { parsePriorities, type OutcomePriorityItem } from "@/lib/priorities";
 
 export type FrozenSnapshot = {
   brandId?: string;
@@ -14,6 +15,7 @@ export type FrozenSnapshot = {
   scorecard: Scorecard;
   inventoryInsights?: SoftwareInsights;
   brandRisks?: BrandRisk[];
+  priorities?: OutcomePriorityItem[];
 };
 
 export function parseFrozenSnapshot(
@@ -35,5 +37,6 @@ export function parseFrozenSnapshot(
     scorecard: scorecard as Scorecard,
     inventoryInsights: parseSoftwareInsights(data.inventoryInsights) ?? undefined,
     brandRisks: parseBrandRisks(data.brandRisks) ?? undefined,
+    priorities: parsePriorities(data.priorities) ?? undefined,
   };
 }

@@ -4,6 +4,7 @@ import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { FunctionScores, HighestBrandRisks, LargestGaps, ScoreOverview } from "@/components/score-overview";
 import { HeadingWithHelp } from "@/components/help-tip";
+import { BrandPriorities } from "@/components/priorities-widget";
 import { SoftwareInsightsCards } from "@/components/software-insights";
 import { formatPeriodLabel } from "@/lib/scoring";
 import { parseFrozenSnapshot } from "@/lib/snapshot";
@@ -60,6 +61,12 @@ export default async function BrandReportSnapshotPage({
       </div>
       <ScoreOverview scorecard={frozen.scorecard} />
       <FunctionScores functions={frozen.scorecard.functions} showDescriptions />
+      {frozen.priorities ? (
+        <BrandPriorities
+          items={frozen.priorities}
+          emptyText="No priorities were set at publish."
+        />
+      ) : null}
       {frozen.brandRisks ? (
         <HighestBrandRisks
           risks={frozen.brandRisks}

@@ -2,9 +2,9 @@
 
 ## Live vs published
 
-The **brand dashboard** is live. If an assessor changes a Current tier after lunch, Overall Current, Coverage, function cards, and highest brand risks update.
+The **brand dashboard** is live. If an assessor changes a Current tier after lunch, Overall Current, Coverage, function cards, and highest brand risks update. If someone with Program Edit changes the Priorities list, that widget updates too.
 
-A **published snapshot** is a frozen copy of that dashboard: scores, function cards, highest brand risks, and software/CVE insights as they were at publish time. Later edits do not rewrite the snapshot. That is what the board should open.
+A **published snapshot** is a frozen copy of that dashboard: scores, function cards, priorities, highest brand risks, and software/CVE insights as they were at publish time. Later edits do not rewrite the snapshot. That is what the board should open.
 
 ## Publishing
 
@@ -12,7 +12,7 @@ People with Reports **Edit** can open **Publish snapshot** under a brand. They c
 
 ## Reading a board scorecard
 
-The scorecard repeats Overall Current, Target, Coverage, and Evidence, then the six functions (with a short NIST explanation for board readers), highest brand risks, and software insights — all from publish time.
+The scorecard repeats Overall Current, Target, Coverage, and Evidence, then the six functions (with a short NIST explanation for board readers), the Priorities list of chosen CSF outcomes, highest brand risks, and software insights — all from publish time.
 
 ## Board / executive viewers
 

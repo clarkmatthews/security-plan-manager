@@ -9,7 +9,7 @@ export const HELP_TOPICS = {
   brandDashboard: {
     title: "Brand dashboard",
     paragraphs: [
-      "This is the live CISO view. Scores, risks, and software insights update when the organizational profile or inventory changes.",
+      "This is the live CISO view. Scores, priorities, risks, and software insights update when the organizational profile, priority list, or inventory changes.",
       "Published board reports are separate frozen copies. They do not change when this dashboard does.",
     ],
   },
@@ -46,6 +46,13 @@ export const HELP_TOPICS = {
     paragraphs: [
       "Each card is one NIST function (Govern, Identify, Protect, Detect, Respond, Recover).",
       "The percent in the top right is the Current score, not the Target. “Current of Target” sits under the title. Click a card to open that function in the organizational profile, if you can view assessments.",
+    ],
+  },
+  priorities: {
+    title: "Priorities",
+    paragraphs: [
+      "A manual, ordered list of NIST CSF outcomes that leadership wants to see making progress. It is not the Low/Medium/High field on each assessment.",
+      "People with Program Edit can add outcomes from the 106-item catalog, reorder them, or remove them. Published board snapshots freeze this list and the Current → Target tiers at publish time.",
     ],
   },
   highestBrandRisks: {
@@ -107,21 +114,21 @@ export const HELP_TOPICS = {
   reports: {
     title: "Brand reports",
     paragraphs: [
-      "Each snapshot is a frozen copy of the brand dashboard at publish time: scores, risks, and software insights.",
+      "Each snapshot is a frozen copy of the brand dashboard at publish time: scores, priorities, risks, and software insights.",
       "Edits after publish change the live dashboard only. Board readers should open a snapshot, not the working profile.",
     ],
   },
   publish: {
     title: "Publish board snapshot",
     paragraphs: [
-      "Publishing freezes Current, Target, Coverage, function scores, highest brand risks, and software insights for the period you choose.",
+      "Publishing freezes Current, Target, Coverage, function scores, priorities, highest brand risks, and software insights for the period you choose.",
       "Use this when leadership needs a checkpoint that will not move as assessors keep scoring.",
     ],
   },
   boardScorecard: {
     title: "Board scorecard",
     paragraphs: [
-      "This is the frozen snapshot. Numbers and risks here do not change when the live dashboard does.",
+      "This is the frozen snapshot. Numbers, priorities, and risks here do not change when the live dashboard does.",
       "Function cards include a short NIST explanation for board readers.",
     ],
   },

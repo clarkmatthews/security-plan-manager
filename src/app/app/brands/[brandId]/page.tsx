@@ -6,9 +6,12 @@ import { computeScorecard } from "@/lib/scoring";
 import { toScoreInputs } from "@/lib/catalog";
 import { FunctionScores, HighestBrandRisks, ScoreOverview } from "@/components/score-overview";
 import { HeadingWithHelp } from "@/components/help-tip";
+import { BrandPriorities } from "@/components/priorities-widget";
 import { SoftwareInsightsCards } from "@/components/software-insights";
 import { computeSoftwareInsights } from "@/lib/software-insights";
 import { computeBrandRisks } from "@/lib/brand-risks";
+import { toPriorityItems } from "@/lib/priorities";
+import { listOutcomeCatalog } from "@/lib/priority-catalog";
 
 export default async function BrandDashboardPage({
   params,
@@ -20,10 +23,18 @@ export default async function BrandDashboardPage({
   const membership = await requireArea("PROGRAM", "view");
   requireBrandAccess(membership, brandId);
 
-  const [brand, insights] = await Promise.all([
+  const [brand, insights, catalog] = await Promise.all([
     prisma.brand.findFirst({
       where: { id: brandId, organizationId: membership.organizationId },
       include: {
+        outcomePriorities: {
+          orderBy: { sortOrder: "asc" },
+          include: {
+            subcategory: {
+              include: { category: { include: { function: true } } },
+            },
+          },
+        },
         profiles: {
           orderBy: { createdAt: "desc" },
           take: 1,
@@ -41,6 +52,7 @@ export default async function BrandDashboardPage({
       },
     }),
     computeSoftwareInsights(membership.organizationId, brandId),
+    membership.permissions.PROGRAM.edit ? listOutcomeCatalog() : Promise.resolve([]),
   ]);
 
   if (!brand || !brand.profiles[0]) {
@@ -55,6 +67,7 @@ export default async function BrandDashboardPage({
     brand.id,
     scoreInputs,
   );
+  const priorities = toPriorityItems(brand.outcomePriorities, profile.assessments);
 
   return (
     <div className="space-y-8">
@@ -76,6 +89,14 @@ export default async function BrandDashboardPage({
             ? (code) => `/app/brands/${brand.id}/assess?function=${code}`
             : undefined
         }
+      />
+
+      <BrandPriorities
+        brandId={brand.id}
+        items={priorities}
+        catalog={catalog}
+        canEdit={membership.permissions.PROGRAM.edit}
+        canViewAssessment={membership.permissions.ASSESSMENT.view}
       />
 
       <HighestBrandRisks risks={brandRisks} />

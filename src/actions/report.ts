@@ -9,6 +9,7 @@ import { toScoreInputs } from "@/lib/catalog";
 import { computeScorecard, periodFromForm } from "@/lib/scoring";
 import { computeSoftwareInsights } from "@/lib/software-insights";
 import { computeBrandRisks } from "@/lib/brand-risks";
+import { toPriorityItems } from "@/lib/priorities";
 
 export async function publishReportAction(profileId: string, formData: FormData) {
   const membership = await requireMembership();
@@ -45,10 +46,20 @@ export async function publishReportAction(profileId: string, formData: FormData)
 
   const scoreInputs = toScoreInputs(profile.assessments);
   const scorecard = computeScorecard(scoreInputs);
-  const [inventoryInsights, brandRisks] = await Promise.all([
+  const [inventoryInsights, brandRisks, outcomePriorities] = await Promise.all([
     computeSoftwareInsights(membership.organizationId, profile.brandId),
     computeBrandRisks(membership.organizationId, profile.brandId, scoreInputs),
+    prisma.brandOutcomePriority.findMany({
+      where: { brandId: profile.brandId },
+      orderBy: { sortOrder: "asc" },
+      include: {
+        subcategory: {
+          include: { category: { include: { function: true } } },
+        },
+      },
+    }),
   ]);
+  const priorities = toPriorityItems(outcomePriorities, profile.assessments);
   const period = periodFromForm(formData);
 
   const snapshot = await prisma.$transaction(async (tx) => {
@@ -65,6 +76,7 @@ export async function publishReportAction(profileId: string, formData: FormData)
           scorecard,
           inventoryInsights,
           brandRisks,
+          priorities,
         },
       },
     });
