@@ -26,9 +26,11 @@ For each function:
 - **Current** is the average of the 0–100 scores for outcomes that are in the profile and have a Current tier.
 - **Target** is the same idea using Target tiers.
 
-Outcomes marked as not included in the profile are left out.
+Outcomes marked as not included in the profile are left out. Unchecking **Included in organizational profile** saves immediately and updates the live dashboard. Existing board snapshots stay frozen until someone publishes again.
 
-The **% complete** in the top right of a function card is the **Current** score, not the Target. Under the title you still see “current of target” (for example 50 of 75).
+The dashboard **Excluded** tile is how many outcomes are out of the profile. Click it to open the catalog already filtered to those rows. The catalog and the six function cards both default to **All**, with **Included** and **Excluded** filters.
+
+The **% complete** in the top right of a function card is the **Current** score, not the Target. Under the title you still see “current of target” (for example 50 of 75) and how many outcomes in that function are in the profile.
 
 ## Overall Current and Target
 
@@ -46,7 +48,7 @@ If Target is 100 and Current is 100, Coverage is 100%. Coverage can never explai
 
 ## Evidence count
 
-The Evidence tile counts artifacts (files, URLs, or notes) linked to outcomes for that brand. It is a volume indicator, not a quality score.
+The Evidence tile counts artifacts (files, URLs, or notes) linked to **in-scope** outcomes for that brand. Evidence on excluded outcomes is not included. It is a volume indicator, not a quality score.
 
 ## Highest brand risks
 

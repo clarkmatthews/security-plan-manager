@@ -9,6 +9,7 @@ export type OutcomePriorityItem = {
   categoryCode: string;
   currentTier: CsfTier | null;
   targetTier: CsfTier | null;
+  includedInProfile: boolean;
 };
 
 export type OutcomeCatalogItem = {
@@ -53,6 +54,7 @@ export function parsePriorities(value: unknown): OutcomePriorityItem[] | null {
       categoryCode: data.categoryCode,
       currentTier: parseTier(data.currentTier),
       targetTier: parseTier(data.targetTier),
+      includedInProfile: data.includedInProfile !== false,
     });
   }
   return items;
@@ -62,6 +64,7 @@ type PriorityAssessment = {
   subcategoryId: string;
   currentTier: CsfTier | null;
   targetTier: CsfTier | null;
+  includedInProfile?: boolean;
 };
 
 type PriorityRow = {
@@ -94,6 +97,7 @@ export function toPriorityItems(
       categoryCode: row.subcategory.category.code,
       currentTier: assessment?.currentTier ?? null,
       targetTier: assessment?.targetTier ?? null,
+      includedInProfile: assessment?.includedInProfile !== false,
     };
   });
 }

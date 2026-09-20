@@ -7,10 +7,11 @@ import {
   addEvidenceAction,
   deleteEvidenceAction,
   saveAssessmentAction,
+  setIncludedInProfileAction,
   updateTiersAction,
 } from "@/actions/assessment";
 import { SafeExternalLink } from "@/components/safe-external-link";
-import { Button, Input, Label, Select, Textarea } from "@/components/ui";
+import { Badge, Button, Input, Label, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 import { compareByCatalog } from "@/lib/catalog";
 import { FUNCTION_META, FUNCTION_ORDER, TIER_LABEL, TIER_VALUE, formatTierValue, isFunctionCode } from "@/lib/scoring";
@@ -104,7 +105,10 @@ export function AssessmentNavigator({
   const [functionFilter, setFunctionFilter] = useState(
     isFunctionCode(initialFunction) ? initialFunction : "ALL",
   );
-  const [view, setView] = useState<"all" | "incomplete" | "gap">("all");
+  const scopeFromUrl = searchParams.get("scope");
+  const [view, setView] = useState<"all" | "included" | "excluded">(
+    scopeFromUrl === "included" || scopeFromUrl === "excluded" ? scopeFromUrl : "all",
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const allowView = canView !== false;
   const allowEvidenceEdit = canEditEvidence ?? canEdit;
@@ -113,6 +117,10 @@ export function AssessmentNavigator({
     const fromUrl = searchParams.get("function");
     const next = isFunctionCode(fromUrl) ? fromUrl : "ALL";
     setFunctionFilter(next);
+    const scope = searchParams.get("scope");
+    if (scope === "included" || scope === "excluded" || scope === "all") {
+      setView(scope);
+    }
   }, [searchParams]);
 
   const ordered = useMemo(
@@ -124,8 +132,8 @@ export function AssessmentNavigator({
     return ordered.filter((row) => {
       const fn = row.subcategory.category.function.code;
       if (functionFilter !== "ALL" && fn !== functionFilter) return false;
-      if (view === "incomplete" && row.currentTier && row.targetTier) return false;
-      if (view === "gap" && gapFor(row) <= 0) return false;
+      if (view === "included" && !row.includedInProfile) return false;
+      if (view === "excluded" && row.includedInProfile) return false;
       if (query) {
         const haystack = `${row.subcategory.code} ${row.subcategory.description}`.toLowerCase();
         if (!haystack.includes(query.toLowerCase())) return false;
@@ -149,6 +157,15 @@ export function AssessmentNavigator({
     const params = new URLSearchParams(searchParams.toString());
     if (code === "ALL") params.delete("function");
     else params.set("function", code);
+    const next = params.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }
+
+  function applyScopeFilter(nextView: "all" | "included" | "excluded") {
+    setView(nextView);
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextView === "all") params.delete("scope");
+    else params.set("scope", nextView);
     const next = params.toString();
     router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
   }
@@ -187,13 +204,13 @@ export function AssessmentNavigator({
           <Select
             value={view}
             onChange={(event) =>
-              setView(event.target.value as "all" | "incomplete" | "gap")
+              applyScopeFilter(event.target.value as "all" | "included" | "excluded")
             }
             className="max-w-[180px]"
           >
-            <option value="all">All in-scope</option>
-            <option value="incomplete">Incomplete</option>
-            <option value="gap">High gap</option>
+            <option value="all">All</option>
+            <option value="included">Included</option>
+            <option value="excluded">Excluded</option>
           </Select>
         </div>
         <div className="rounded-xl border border-[var(--border)]">
@@ -235,16 +252,19 @@ export function AssessmentNavigator({
                           style={{ background: color }}
                         />
                         <div className="min-w-0">
-                          <button
-                            type="button"
-                            className="font-medium text-left hover:underline"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              if (allowView) setSelectedId(row.id);
-                            }}
-                          >
-                            {row.subcategory.code}
-                          </button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              type="button"
+                              className="font-medium text-left hover:underline"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                if (allowView) setSelectedId(row.id);
+                              }}
+                            >
+                              {row.subcategory.code}
+                            </button>
+                            {!row.includedInProfile ? <Badge>Excluded</Badge> : null}
+                          </div>
                           <div className="line-clamp-2 text-[var(--muted)]">
                             {row.subcategory.description}
                           </div>
@@ -454,6 +474,8 @@ function AssessmentDetail({
   const [confirmedCurrent, setConfirmedCurrent] = useState(assessment.currentTier ?? "");
   const [confirmedTarget, setConfirmedTarget] = useState(assessment.targetTier ?? "");
   const [pendingField, setPendingField] = useState<"current" | "target" | null>(null);
+  const [included, setIncluded] = useState(assessment.includedInProfile);
+  const [includePending, startInclude] = useTransition();
   const fn = assessment.subcategory.category.function;
   const category = assessment.subcategory.category;
 
@@ -512,12 +534,24 @@ function AssessmentDetail({
       <form action={saveAction} className="space-y-4">
         <input type="hidden" name="assessmentId" value={assessment.id} />
         <input type="hidden" name="tierChangeComment" value={tierComment} />
+        {included ? <input type="hidden" name="includedInProfile" value="on" /> : null}
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            name="includedInProfile"
-            defaultChecked={assessment.includedInProfile}
-            disabled={!canEdit}
+            checked={included}
+            disabled={!canEdit || includePending}
+            onChange={(event) => {
+              const next = event.target.checked;
+              setIncluded(next);
+              startInclude(async () => {
+                const result = await setIncludedInProfileAction(assessment.id, next);
+                if (result?.error) {
+                  setIncluded(!next);
+                  return;
+                }
+                router.refresh();
+              });
+            }}
           />
           Included in organizational profile
         </label>

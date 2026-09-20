@@ -1,12 +1,37 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FUNCTION_META, formatCompletion, formatScore, functionLabel, TIER_LABEL, type FunctionScore, type GapItem, type Scorecard } from "@/lib/scoring";
 import { Card } from "@/components/ui";
 import { HeadingWithHelp, WidgetLabel } from "@/components/help-tip";
 import type { BrandRisk } from "@/lib/brand-risks";
+import { cn } from "@/lib/utils";
 
-export function ScoreOverview({ scorecard }: { scorecard: Scorecard }) {
+export function ScoreOverview({
+  scorecard,
+  excludedHref,
+}: {
+  scorecard: Scorecard;
+  excludedHref?: string;
+}) {
+  const showExcluded = typeof scorecard.excluded === "number";
+  const excludedCard = showExcluded ? (
+    <Card
+      className={
+        excludedHref ? "h-full transition hover:border-[var(--accent)]" : undefined
+      }
+    >
+      <WidgetLabel topic="excludedCount">Excluded</WidgetLabel>
+      <div className="mt-2 text-4xl font-semibold">{scorecard.excluded}</div>
+      <div className="mt-1 text-sm text-[var(--muted)]">
+        Outcomes not in the organizational profile
+      </div>
+    </Card>
+  ) : null;
+
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <Card>
         <WidgetLabel topic="overallCurrent">Overall current</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">{formatScore(scorecard.overallCurrent)}</div>
@@ -32,35 +57,81 @@ export function ScoreOverview({ scorecard }: { scorecard: Scorecard }) {
       <Card>
         <WidgetLabel topic="evidenceCount">Evidence</WidgetLabel>
         <div className="mt-2 text-4xl font-semibold">{scorecard.evidenceCount}</div>
-        <div className="mt-1 text-sm text-[var(--muted)]">Artifacts linked to outcomes</div>
+        <div className="mt-1 text-sm text-[var(--muted)]">Artifacts linked to in-scope outcomes</div>
       </Card>
+      {excludedHref && excludedCard ? (
+        <Link
+          href={excludedHref}
+          prefetch={false}
+          aria-label="Open excluded outcomes in the organizational profile"
+        >
+          {excludedCard}
+        </Link>
+      ) : (
+        excludedCard
+      )}
     </div>
   );
 }
 
 export function FunctionScores({
   functions,
-  assessHref,
+  assessBasePath,
   showDescriptions = false,
 }: {
   functions: FunctionScore[];
-  assessHref?: (code: string) => string;
+  assessBasePath?: string;
   showDescriptions?: boolean;
 }) {
+  const [scope, setScope] = useState<"all" | "included" | "excluded">("all");
+  const visible = useMemo(() => {
+    return functions.filter((fn) => {
+      if (scope === "included") return fn.included > 0;
+      if (scope === "excluded") return fn.included === 0;
+      return true;
+    });
+  }, [functions, scope]);
+
   return (
     <section className="space-y-4">
-      <HeadingWithHelp as="h2" topic="functionComplete" className="text-lg font-medium">
-        NIST functions
-      </HeadingWithHelp>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <HeadingWithHelp as="h2" topic="functionComplete" className="text-lg font-medium">
+          NIST functions
+        </HeadingWithHelp>
+        <div className="flex flex-wrap items-center gap-2">
+          {(["all", "included", "excluded"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setScope(value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs capitalize",
+                scope === value
+                  ? "border-[var(--accent)] bg-[var(--surface-2)] text-[var(--foreground)]"
+                  : "border-[var(--border)] text-[var(--muted)]",
+              )}
+            >
+              {value === "all" ? "All" : value === "included" ? "Included" : "Excluded"}
+            </button>
+          ))}
+        </div>
+      </div>
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {functions.map((fn) => {
+      {visible.length === 0 ? (
+        <p className="text-sm text-[var(--muted)]">
+          {scope === "excluded"
+            ? "No NIST functions are fully excluded."
+            : "No NIST functions match this filter."}
+        </p>
+      ) : null}
+      {visible.map((fn) => {
         const meta = FUNCTION_META[fn.code];
         const current = fn.currentScore ?? 0;
         const target = fn.targetScore ?? 0;
         const card = (
           <Card
             className={
-              assessHref
+              assessBasePath
                 ? "h-full transition hover:border-[var(--accent)]"
                 : undefined
             }
@@ -87,6 +158,8 @@ export function FunctionScores({
             ) : null}
             <div className="mt-1 text-xs text-[var(--muted)]">
               {formatScore(fn.currentScore)} of {formatScore(fn.targetScore)}
+              {" · "}
+              {fn.included} outcome{fn.included === 1 ? "" : "s"}
             </div>
             <div className="mt-4 space-y-2">
               <Bar label="Current" value={current} color={meta?.color ?? "#d7c36a"} />
@@ -94,13 +167,13 @@ export function FunctionScores({
             </div>
           </Card>
         );
-        if (!assessHref) {
+        if (!assessBasePath) {
           return <div key={fn.code}>{card}</div>;
         }
         return (
           <Link
             key={fn.code}
-            href={assessHref(fn.code)}
+            href={`${assessBasePath}?function=${fn.code}`}
             prefetch={false}
             aria-label={`Open ${functionLabel(fn.code, fn.name)} assessment`}
           >

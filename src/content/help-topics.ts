@@ -37,15 +37,22 @@ export const HELP_TOPICS = {
   evidenceCount: {
     title: "Evidence",
     paragraphs: [
-      "This counts files, URLs, and notes linked to outcomes for this brand.",
+      "This counts files, URLs, and notes linked to outcomes that are included in the organizational profile.",
       "It is a volume indicator, not a quality score. Open Evidence under the brand to browse items.",
+    ],
+  },
+  excludedCount: {
+    title: "Excluded",
+    paragraphs: [
+      "How many of the 106 NIST CSF outcomes are not in this brand’s organizational profile.",
+      "Those outcomes do not count toward Overall, Coverage, function scores, or in-scope evidence. On the live dashboard, click the number to open the catalog filtered to excluded rows. Published board reports freeze this count.",
     ],
   },
   functionComplete: {
     title: "Function scores",
     paragraphs: [
-      "Each card is one NIST function (Govern, Identify, Protect, Detect, Respond, Recover).",
-      "The percent in the top right is the Current score, not the Target. “Current of Target” sits under the title. Click a card to open that function in the organizational profile, if you can view assessments.",
+      "Each card is one NIST function (Govern, Identify, Protect, Detect, Respond, Recover). Scores use only outcomes included in the profile.",
+      "The percent in the top right is the Current score, not the Target. Filter All, Included, or Excluded to hide functions that still have in-scope outcomes or that have none. Click a card to open that function in the organizational profile, if you can view assessments.",
     ],
   },
   priorities: {
@@ -73,7 +80,7 @@ export const HELP_TOPICS = {
     title: "Organizational profile",
     paragraphs: [
       "Score each NIST CSF 2.0 outcome’s Current and Target tiers. There are 106 outcomes across six functions.",
-      "Click an outcome for the full NIST text, whether it is in the profile, priorities, policies and practices, evidence, and a short change history.",
+      "Uncheck Included in organizational profile to drop that outcome from live dashboard and the next published board snapshot. The checkbox saves immediately. Filter the list by All, Included, or Excluded.",
     ],
   },
   assessmentTiers: {

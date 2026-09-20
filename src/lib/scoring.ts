@@ -120,6 +120,7 @@ export type Scorecard = {
   overallGap: number | null;
   coverage: number;
   included: number;
+  excluded: number;
   assessed: number;
   complete: number;
   evidenceCount: number;
@@ -176,42 +177,38 @@ export function computeScorecard(rows: AssessmentScoreInput[]): Scorecard {
     functionsMap.set(row.functionCode, list);
   }
 
-  const functions: FunctionScore[] = [...functionsMap.entries()]
-    .sort(
-      ([a], [b]) =>
-        FUNCTION_ORDER.indexOf(a as (typeof FUNCTION_ORDER)[number]) -
-        FUNCTION_ORDER.indexOf(b as (typeof FUNCTION_ORDER)[number]),
-    )
-    .map(([code, items]) => {
-      const withCurrent = items.filter((item) => item.currentTier);
-      const complete = items.filter((item) => item.currentTier && item.targetTier);
-      const currentScore = average(
-        withCurrent
-          .map((item) => tierToScore(item.currentTier))
-          .filter((value): value is number => value !== null),
-      );
-      const targetAssessed = items.filter((item) => item.targetTier);
-      const targetScore = average(
-        targetAssessed
-          .map((item) => tierToScore(item.targetTier))
-          .filter((value): value is number => value !== null),
-      );
-      const gap =
-        currentScore !== null && targetScore !== null
-          ? targetScore - currentScore
-          : null;
-      return {
-        code,
-        name: functionDisplayName(code, items[0]?.functionName),
-        currentScore,
-        targetScore,
-        gap,
-        coverage: items.length === 0 ? 0 : complete.length / items.length,
-        included: items.length,
-        assessed: withCurrent.length,
-        complete: complete.length,
-      };
-    });
+  const functions: FunctionScore[] = FUNCTION_ORDER.map((code) => {
+    const items = functionsMap.get(code) ?? [];
+    const withCurrent = items.filter((item) => item.currentTier);
+    const complete = items.filter((item) => item.currentTier && item.targetTier);
+    const currentScore = average(
+      withCurrent
+        .map((item) => tierToScore(item.currentTier))
+        .filter((value): value is number => value !== null),
+    );
+    const targetAssessed = items.filter((item) => item.targetTier);
+    const targetScore = average(
+      targetAssessed
+        .map((item) => tierToScore(item.targetTier))
+        .filter((value): value is number => value !== null),
+    );
+    const gap =
+      currentScore !== null && targetScore !== null
+        ? targetScore - currentScore
+        : null;
+    const named = rows.find((row) => row.functionCode === code);
+    return {
+      code,
+      name: functionDisplayName(code, items[0]?.functionName ?? named?.functionName),
+      currentScore,
+      targetScore,
+      gap,
+      coverage: items.length === 0 ? 0 : complete.length / items.length,
+      included: items.length,
+      assessed: withCurrent.length,
+      complete: complete.length,
+    };
+  });
 
   const overallCurrent = average(
     functions
@@ -236,9 +233,10 @@ export function computeScorecard(rows: AssessmentScoreInput[]): Scorecard {
     coverage:
       includedRows.length === 0 ? 0 : completeRows.length / includedRows.length,
     included: includedRows.length,
+    excluded: rows.length - includedRows.length,
     assessed: completeRows.length,
     complete: completeRows.length,
-    evidenceCount: rows.reduce((sum, row) => sum + row.evidenceCount, 0),
+    evidenceCount: includedRows.reduce((sum, row) => sum + row.evidenceCount, 0),
     functions,
     topGaps,
   };

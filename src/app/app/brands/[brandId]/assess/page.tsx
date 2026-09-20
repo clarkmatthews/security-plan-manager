@@ -13,7 +13,7 @@ export default async function AssessPage({
   searchParams,
 }: {
   params: Promise<{ brandId: string }>;
-  searchParams: Promise<{ function?: string }>;
+  searchParams: Promise<{ function?: string; scope?: string }>;
 }) {
   const { brandId } = await params;
   const { function: functionParam } = await searchParams;

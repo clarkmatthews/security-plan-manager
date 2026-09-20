@@ -155,6 +155,34 @@ export async function saveAssessmentAction(
   return { ok: true };
 }
 
+export async function setIncludedInProfileAction(
+  assessmentId: string,
+  included: boolean,
+): Promise<AssessmentState> {
+  const membership = await requireMembership();
+  if (!membership.permissions.ASSESSMENT.edit) {
+    return { error: "You do not have permission to edit assessments." };
+  }
+
+  const assessment = await prisma.subcategoryAssessment.findFirst({
+    where: {
+      id: assessmentId,
+      organizationId: membership.organizationId,
+    },
+    include: { profile: true },
+  });
+  if (!assessment || !hasBrandAccess(membership, assessment.profile.brandId)) {
+    return { error: "Assessment not found." };
+  }
+
+  await prisma.subcategoryAssessment.update({
+    where: { id: assessment.id },
+    data: { includedInProfile: included },
+  });
+  revalidateLiveDashboard(assessment.profile.brandId);
+  return { ok: true };
+}
+
 export async function updateTiersAction(
   assessmentId: string,
   currentTier: string,

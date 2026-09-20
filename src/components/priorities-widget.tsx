@@ -151,6 +151,9 @@ export function BrandPriorities({
                     title
                   )}
                   <div className="text-[var(--muted)]">{item.subcategoryDescription}</div>
+                  {item.includedInProfile === false ? (
+                    <div className="mt-1 text-xs text-[var(--muted)]">Not in profile</div>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-start gap-2">
                   <div className="text-right text-[var(--muted)]">

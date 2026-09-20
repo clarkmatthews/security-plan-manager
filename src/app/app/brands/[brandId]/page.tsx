@@ -81,12 +81,19 @@ export default async function BrandDashboardPage({
         </p>
       </div>
 
-      <ScoreOverview scorecard={scorecard} />
+      <ScoreOverview
+        scorecard={scorecard}
+        excludedHref={
+          membership.permissions.ASSESSMENT.view
+            ? `/app/brands/${brand.id}/assess?scope=excluded`
+            : undefined
+        }
+      />
       <FunctionScores
         functions={scorecard.functions}
-        assessHref={
+        assessBasePath={
           membership.permissions.ASSESSMENT.view
-            ? (code) => `/app/brands/${brand.id}/assess?function=${code}`
+            ? `/app/brands/${brand.id}/assess`
             : undefined
         }
       />
