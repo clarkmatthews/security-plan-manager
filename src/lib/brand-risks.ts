@@ -1,5 +1,6 @@
 import type { Priority } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { isRejectedCve, visibleCveWhere } from "@/lib/cve-visibility";
 import { parseCvssFromText, CVE_RISK_CVSS_THRESHOLD } from "@/lib/cvss";
 import { normalizeProductName } from "@/lib/software";
 import {
@@ -126,6 +127,7 @@ export async function computeBrandRisks(
       brandId,
       acknowledgedAt: null,
       software: { archivedAt: null },
+      cve: visibleCveWhere({ includeBlank: true }),
     },
     include: {
       cve: { select: { cveId: true, summary: true, sourceUrl: true, cvssScore: true } },
@@ -135,6 +137,7 @@ export async function computeBrandRisks(
 
   const scored: Array<{ match: (typeof matches)[number]; cvssScore: number }> = [];
   for (const match of matches) {
+    if (isRejectedCve(match.cve)) continue;
     const cvssScore = match.cve.cvssScore ?? parseCvssFromText(match.cve.summary);
     if (cvssScore == null || cvssScore <= CVE_RISK_CVSS_THRESHOLD) continue;
     scored.push({ match, cvssScore });

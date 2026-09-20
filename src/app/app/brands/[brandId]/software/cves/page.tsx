@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireArea, requireBrandAccess } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
-import { Card } from "@/components/ui";
+import { Button, Card, Input, Label } from "@/components/ui";
 import { AcknowledgeMatchButton } from "@/components/acknowledge-match-button";
 import { CveHistoryForm } from "@/components/cve-history-form";
 import { HeadingWithHelp } from "@/components/help-tip";
 import { getAppConfig } from "@/lib/app-config";
+import { purgeRejectedCves, visibleCveWhere } from "@/lib/cve-visibility";
 
 const CATALOG_PAGE_SIZE = 50;
 
@@ -18,12 +19,32 @@ function formatDay(value: Date | null | undefined) {
   return value ? value.toISOString().slice(0, 10) : "—";
 }
 
+function cveHistoryHref(
+  brandId: string,
+  options: {
+    catalog?: boolean;
+    q?: string;
+    includeBlank?: boolean;
+    page?: number;
+  },
+) {
+  const params = new URLSearchParams();
+  if (options.catalog) params.set("view", "catalog");
+  if (options.q) params.set("q", options.q);
+  if (options.includeBlank) params.set("blank", "1");
+  if (options.page && options.page > 1) params.set("page", String(options.page));
+  const query = params.toString();
+  return query
+    ? `/app/brands/${brandId}/software/cves?${query}`
+    : `/app/brands/${brandId}/software/cves`;
+}
+
 export default async function SoftwareCveHistoryPage({
   params,
   searchParams,
 }: {
   params: Promise<{ brandId: string }>;
-  searchParams: Promise<{ view?: string; page?: string }>;
+  searchParams: Promise<{ view?: string; page?: string; q?: string; blank?: string }>;
 }) {
   const { brandId } = await params;
   const query = await searchParams;
@@ -35,15 +56,24 @@ export default async function SoftwareCveHistoryPage({
   });
   if (!brand) notFound();
 
+  await purgeRejectedCves();
+
   const showCatalog = query.view === "catalog";
   const canEdit = membership.permissions.SOFTWARE.edit;
   const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
+  const search = (query.q ?? "").trim();
+  const includeBlank = query.blank === "1";
+  const cveWhere = visibleCveWhere({ q: search, includeBlank });
 
   const [matches, catalog, catalogTotal, syncState, appConfig] = await Promise.all([
     showCatalog
       ? Promise.resolve([])
       : prisma.softwareCveMatch.findMany({
-          where: { brandId: brand.id, organizationId: membership.organizationId },
+          where: {
+            brandId: brand.id,
+            organizationId: membership.organizationId,
+            cve: cveWhere,
+          },
           include: {
             cve: true,
             software: {
@@ -55,20 +85,25 @@ export default async function SoftwareCveHistoryPage({
         }),
     showCatalog
       ? prisma.cveRecord.findMany({
+          where: cveWhere,
           orderBy: [{ publishedAt: "desc" }, { lastSeenAt: "desc" }],
           skip: (page - 1) * CATALOG_PAGE_SIZE,
           take: CATALOG_PAGE_SIZE,
         })
       : Promise.resolve([]),
-    showCatalog ? prisma.cveRecord.count() : Promise.resolve(0),
+    showCatalog ? prisma.cveRecord.count({ where: cveWhere }) : Promise.resolve(0),
     prisma.cveSyncState.findUnique({ where: { id: "default" } }),
     getAppConfig(),
   ]);
   const cveRetentionDays = appConfig.cveRetentionDays;
 
   const catalogPages = Math.max(1, Math.ceil(catalogTotal / CATALOG_PAGE_SIZE));
-  const matchesHref = `/app/brands/${brand.id}/software/cves`;
-  const catalogHref = `/app/brands/${brand.id}/software/cves?view=catalog`;
+  const matchesHref = cveHistoryHref(brand.id, { q: search, includeBlank });
+  const catalogHref = cveHistoryHref(brand.id, {
+    catalog: true,
+    q: search,
+    includeBlank,
+  });
 
   return (
     <div className="space-y-6">
@@ -114,6 +149,30 @@ export default async function SoftwareCveHistoryPage({
         </Link>
       </div>
 
+      <form
+        action={`/app/brands/${brand.id}/software/cves`}
+        method="get"
+        className="flex flex-wrap items-end gap-3"
+      >
+        {showCatalog ? <input type="hidden" name="view" value="catalog" /> : null}
+        <div className="min-w-[16rem] flex-1">
+          <Label htmlFor="cve-search">Search</Label>
+          <Input
+            id="cve-search"
+            name="q"
+            defaultValue={search}
+            placeholder="CVE ID or description"
+          />
+        </div>
+        <label className="flex items-center gap-2 pb-2 text-sm">
+          <input type="checkbox" name="blank" value="1" defaultChecked={includeBlank} />
+          Show CVEs without a description
+        </label>
+        <Button type="submit" variant="secondary">
+          Search
+        </Button>
+      </form>
+
       {canEdit ? (
         <Card>
           <h2 className="mb-1 text-lg font-medium">Load prior CVE history</h2>
@@ -151,15 +210,17 @@ export default async function SoftwareCveHistoryPage({
         catalog.length === 0 ? (
           <Card>
             <p className="text-sm text-[var(--muted)]">
-              No CVE records in the catalog yet. Load a date range or wait for the
-              daily feed.
+              {search
+                ? "No CVE records match this search. Try another CVE ID or description, or show CVEs without a description."
+                : "No CVE records in the catalog yet. Load a date range or wait for the daily feed."}
             </p>
           </Card>
         ) : (
           <>
             <p className="text-sm text-[var(--muted)]">
-              {catalogTotal} CVE{catalogTotal === 1 ? "" : "s"} in the last{" "}
-              {cveRetentionDays} days.
+              {catalogTotal} CVE{catalogTotal === 1 ? "" : "s"}
+              {includeBlank ? "" : " with a description"}
+              {search ? ` matching “${search}”` : ` in the last ${cveRetentionDays} days`}.
             </p>
             <div className="space-y-3">
               {catalog.map((record) => (
@@ -172,7 +233,9 @@ export default async function SoftwareCveHistoryPage({
                   >
                     {record.cveId}
                   </a>
-                  <p className="mt-2 text-sm">{record.summary}</p>
+                  <p className="mt-2 text-sm">
+                    {record.summary || "No description"}
+                  </p>
                   <p className="mt-2 text-xs text-[var(--muted)]">
                     Published {formatDate(record.publishedAt)} · last seen{" "}
                     {formatDate(record.lastSeenAt)}
@@ -191,7 +254,12 @@ export default async function SoftwareCveHistoryPage({
                 <div className="flex gap-3">
                   {page > 1 ? (
                     <Link
-                      href={`${catalogHref}&page=${page - 1}`}
+                      href={cveHistoryHref(brand.id, {
+                        catalog: true,
+                        q: search,
+                        includeBlank,
+                        page: page - 1,
+                      })}
                       prefetch={false}
                       className="text-[var(--accent)] underline"
                     >
@@ -200,7 +268,12 @@ export default async function SoftwareCveHistoryPage({
                   ) : null}
                   {page < catalogPages ? (
                     <Link
-                      href={`${catalogHref}&page=${page + 1}`}
+                      href={cveHistoryHref(brand.id, {
+                        catalog: true,
+                        q: search,
+                        includeBlank,
+                        page: page + 1,
+                      })}
                       prefetch={false}
                       className="text-[var(--accent)] underline"
                     >
@@ -215,8 +288,9 @@ export default async function SoftwareCveHistoryPage({
       ) : matches.length === 0 ? (
         <Card>
           <p className="text-sm text-[var(--muted)]">
-            No CVE matches yet. Active software is checked when the daily CVE feed
-            runs, when you load history, and when you add or restore an application.
+            {search
+              ? "No application matches for this search."
+              : "No CVE matches yet. Active software is checked when the daily CVE feed runs, when you load history, and when you add or restore an application."}
           </p>
         </Card>
       ) : (

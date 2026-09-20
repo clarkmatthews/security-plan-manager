@@ -114,8 +114,8 @@ export const HELP_TOPICS = {
   cveHistory: {
     title: "CVE history",
     paragraphs: [
-      "Application matches are CVEs tied to this brand’s software. All ingested CVEs is the shared catalog for the deployment.",
-      "How long records stay and how often the feed syncs is set on Config (defaults 120 days and 24 hours). Acknowledge a match when you have handled it.",
+      "Application matches are CVEs tied to this brand’s software. All ingested CVEs is the shared catalog for the deployment. Search by CVE ID or description. Records without a description are hidden unless you choose to show them.",
+      "Rejected CVEs are not ingested or shown. How long records stay and how often the feed syncs is set on Config (defaults 120 days and 24 hours). Acknowledge a match when you have handled it.",
     ],
   },
   reports: {

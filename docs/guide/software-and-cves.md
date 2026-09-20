@@ -23,7 +23,7 @@ The product keeps a rolling catalog of CVE records (default **120 days**; Config
 Matches that are still open can appear:
 
 - In a **login alert** if you can view Software inventory. You can acknowledge one or all, or snooze the dialog for this browser session.
-- On **CVE history** for the brand (application matches vs the full ingested catalog).
+- On **CVE history** for the brand (application matches vs the full ingested catalog). Search by CVE ID or description. Entries with no description are hidden by default. Rejected CVEs are dropped from the catalog and are not matched, alerted, or shown on the dashboard.
 - In **Highest brand risks** only when CVSS is above 7.5, the app is still active, and the match is not acknowledged. At most two CVE slots, grouped by product.
 
 ## Software and CVE insight cards

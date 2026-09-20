@@ -1,5 +1,6 @@
 import type { SoftwareCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { purgeRejectedCves, visibleCveWhere } from "@/lib/cve-visibility";
 import { SOFTWARE_CATEGORIES, softwareCategoryLabel } from "@/lib/software";
 
 export type SoftwareInsights = {
@@ -21,6 +22,7 @@ export async function computeSoftwareInsights(
   organizationId: string,
   brandId: string,
 ): Promise<SoftwareInsights> {
+  await purgeRejectedCves();
   const [assets, matches] = await Promise.all([
     prisma.softwareAsset.findMany({
       where: { organizationId, brandId, archivedAt: null },
@@ -31,6 +33,7 @@ export async function computeSoftwareInsights(
         organizationId,
         brandId,
         software: { archivedAt: null },
+        cve: visibleCveWhere({ includeBlank: true }),
       },
       select: {
         softwareAssetId: true,
