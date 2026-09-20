@@ -14,7 +14,15 @@ import { SafeExternalLink } from "@/components/safe-external-link";
 import { Badge, Button, Input, Label, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 import { compareByCatalog } from "@/lib/catalog";
-import { FUNCTION_META, FUNCTION_ORDER, TIER_LABEL, TIER_VALUE, formatTierValue, isFunctionCode } from "@/lib/scoring";
+import {
+  FUNCTION_META,
+  FUNCTION_ORDER,
+  INITIAL_TIER_CHANGE_COMMENT,
+  TIER_LABEL,
+  TIER_VALUE,
+  formatTierValue,
+  isFunctionCode,
+} from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 import { HelpTip } from "@/components/help-tip";
 
@@ -350,6 +358,23 @@ function InlineTierSelect({
           const next = event.target.value;
           if (next === (value ?? "")) return;
           setDraftValue(next);
+          if (value) return;
+          const current = field === "current" ? next : (otherValue ?? "");
+          const target = field === "target" ? next : (otherValue ?? "");
+          startTransition(async () => {
+            const result = await updateTiersAction(
+              assessmentId,
+              current,
+              target,
+              INITIAL_TIER_CHANGE_COMMENT,
+            );
+            if (result?.error) {
+              setDraftValue(null);
+              return;
+            }
+            setDraftValue(null);
+            router.refresh();
+          });
         }}
       >
         <option value="">{emptyLabel}</option>
@@ -360,7 +385,7 @@ function InlineTierSelect({
         ))}
       </Select>
       <ChangeReasonDialog
-        open={draftValue !== null}
+        open={draftValue !== null && Boolean(value)}
         field={field}
         pending={pending}
         onCancel={() => setDraftValue(null)}
@@ -575,7 +600,12 @@ function AssessmentDetail({
               onChange={(event) => {
                 const next = event.target.value;
                 setCurrentTier(next);
-                if (next !== confirmedCurrent) setPendingField("current");
+                if (next === confirmedCurrent) return;
+                if (!assessment.currentTier) {
+                  setConfirmedCurrent(next);
+                  return;
+                }
+                setPendingField("current");
               }}
             >
               <option value="">Not scored</option>
@@ -596,7 +626,12 @@ function AssessmentDetail({
               onChange={(event) => {
                 const next = event.target.value;
                 setTargetTier(next);
-                if (next !== confirmedTarget) setPendingField("target");
+                if (next === confirmedTarget) return;
+                if (!assessment.targetTier) {
+                  setConfirmedTarget(next);
+                  return;
+                }
+                setPendingField("target");
               }}
             >
               <option value="">Not set</option>

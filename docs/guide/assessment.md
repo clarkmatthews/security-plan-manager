@@ -11,7 +11,7 @@ For each outcome you can set:
 - **Current** — how mature this outcome is today.
 - **Target** — how mature it should be.
 
-When you change a tier, the product asks for an optional **comment**. You can save without a comment. Comments show up in Assessment history so others can see why the value moved.
+The first time a Current or Target is set, history is written automatically with **Initial Configuration Set** and you are not asked for a reason. Later changes ask for an optional **comment**. You can save without a comment. Comments show up in Assessment history so others can see why the value moved.
 
 ## Outcome details
 

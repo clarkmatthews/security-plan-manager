@@ -16,6 +16,8 @@ export const TIER_LABEL: Record<CsfTier, string> = {
   ADAPTIVE: "Adaptive",
 };
 
+export const INITIAL_TIER_CHANGE_COMMENT = "Initial Configuration Set";
+
 export const FUNCTION_META: Record<
   string,
   { color: string; short: string; description: string }

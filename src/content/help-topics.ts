@@ -87,7 +87,7 @@ export const HELP_TOPICS = {
     title: "Current and Target tiers",
     paragraphs: [
       "Current is today’s maturity. Target is where you want it. Tiers map to 25, 50, 75, and 100.",
-      "Changing a tier asks for an optional comment. Comments show in Assessment history even if you leave the comment blank.",
+      "The first time a Current or Target is set, history records “Initial Configuration Set” and no comment is asked. Later changes ask for an optional comment, which still shows in Assessment history if you leave it blank.",
     ],
   },
   history: {

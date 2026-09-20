@@ -10,6 +10,16 @@ import {
   storeEvidenceFile,
 } from "@/lib/evidence-storage";
 import { parseSafeHttpUrl } from "@/lib/safe-url";
+import { INITIAL_TIER_CHANGE_COMMENT } from "@/lib/scoring";
+
+function commentForTierChange(
+  before: CsfTier | null,
+  after: CsfTier | null,
+  comment?: string | null,
+) {
+  if (before == null && after != null) return INITIAL_TIER_CHANGE_COMMENT;
+  return comment?.trim() || null;
+}
 
 function optionalString(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -68,7 +78,7 @@ async function recordTierChanges(args: {
       field: "CURRENT_TIER",
       fromValue: args.beforeCurrent,
       toValue: args.afterCurrent,
-      comment: args.comment?.trim() || null,
+      comment: commentForTierChange(args.beforeCurrent, args.afterCurrent, args.comment),
     });
   }
   if (args.beforeTarget !== args.afterTarget) {
@@ -79,7 +89,7 @@ async function recordTierChanges(args: {
       field: "TARGET_TIER",
       fromValue: args.beforeTarget,
       toValue: args.afterTarget,
-      comment: args.comment?.trim() || null,
+      comment: commentForTierChange(args.beforeTarget, args.afterTarget, args.comment),
     });
   }
   if (rows.length > 0) {
