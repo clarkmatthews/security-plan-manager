@@ -132,6 +132,7 @@ Live CISO view of NIST CSF 2.0 functions, highest brand risks, and software/CVE 
 Dashboard cont.
 <img width="1185" height="819" alt="image" src="https://github.com/user-attachments/assets/5d508a22-18b8-4b99-a832-af783bcfcf94" />
 <img width="1190" height="413" alt="image" src="https://github.com/user-attachments/assets/7d92f83e-98b2-4f51-8f99-9c10c7cb23cd" />
+<img width="1185" height="764" alt="image" src="https://github.com/user-attachments/assets/27df0eff-4d5c-47c1-bc82-c4c0d07aba2d" />
 
 
 ### Navigation
