@@ -30,6 +30,12 @@ Matches that are still open can appear:
 
 On the brand dashboard, outstanding and resolved CVE counts are unique **application + CVE date**. Ten CVEs on the same product on the same day count as one exposure, not ten.
 
+## Published CVE records (CVE.org)
+
+The bottom of the live dashboard also shows the CVE.org **Published CVE Records** table: quarterly counts for the whole CVE List, not this brand. The table is copied about once a week. Incomplete quarters show as TBA. The charts are percent change: quarter over quarter for completed quarters, and year over year for years that already have all four quarters. People with Config **Edit** can also press **Sync Published CVE Records Now** on Config to copy a fresh table immediately.
+
+Board snapshots do not freeze this widget.
+
 ## Keeping the catalog fresh
 
 CVE records arrive from a public GitHub CVE feed. The first visit to the app after the Config **sync interval** (default 24 hours) can pull new items. Operators can also run a scheduled job. Config sets how many days to keep records; older ones are dropped on the next sync.

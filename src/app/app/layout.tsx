@@ -7,6 +7,7 @@ import { listAccessibleBrands } from "@/lib/brand-access";
 import { hasAccess, homePath, navLinksFor } from "@/lib/rbac";
 import { listUnackedCveAlerts } from "@/lib/cve-alerts";
 import { syncCvesIfStale } from "@/lib/cve-sync";
+import { syncCveMetricsIfStale } from "@/lib/cve-metrics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,7 @@ export default async function AppGroupLayout({
 }) {
   const membership = await requireMembership();
   void syncCvesIfStale();
+  void syncCveMetricsIfStale();
   const [organization, brands] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: membership.organizationId },

@@ -1,5 +1,6 @@
 import { cveSyncIntervalHours } from "../lib/app-config";
 import { syncCves } from "../lib/cve-sync";
+import { syncCveMetricsIfStale } from "../lib/cve-metrics";
 
 let stopped = false;
 
@@ -27,9 +28,10 @@ async function main() {
     try {
       const intervalHours = await cveSyncIntervalHours();
       const result = await syncCves({ force: true });
+      const metrics = await syncCveMetricsIfStale();
       console.log(
         JSON.stringify(
-          { at: new Date().toISOString(), intervalHours, ...result },
+          { at: new Date().toISOString(), intervalHours, cves: result, metrics },
           null,
           2,
         ),

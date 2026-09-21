@@ -91,9 +91,9 @@ Optional CVE jobs. The GitHub `cvelistV5` delta is also pulled on the first `/ap
 npm run cve:cron
 ```
 
-That process syncs immediately, then every X hours from Config. One-off: `npm run cve:sync`.
+That process syncs immediately, then every X hours from Config. One-off: `npm run cve:sync`. The same cron also refreshes CVE.org published-record metrics if they are more than a week old.
 
-An external crontab or host scheduler can POST to `/api/cron/cve-sync` with `Authorization: Bearer $CVE_SYNC_SECRET`. That run is forced unless you pass `?force=0`.
+An external crontab or host scheduler can POST to `/api/cron/cve-sync` with `Authorization: Bearer $CVE_SYNC_SECRET`. That run is forced unless you pass `?force=0`. The published-records table has a matching `/api/cron/cve-metrics` endpoint.
 
 ## Demo login
 

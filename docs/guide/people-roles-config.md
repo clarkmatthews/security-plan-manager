@@ -29,6 +29,7 @@ Config is for the **whole deployment**, not one brand. Typical editors are owner
 - **Email (SMTP)** — host, port, encryption, username, password, from name, from address. Password is write-only (leave blank to keep the stored value). Invites still work as copyable links if mail is not set up. You can send a test message to yourself after saving.
 - **CVE retention (days)** — how long CVE records stay in the catalog (default 120).
 - **CVE sync interval (hours)** — minimum time between automatic GitHub delta pulls (default 24).
+- **Published CVE records** — **Sync Published CVE Records Now** copies CVE.org’s quarterly counts onto the live dashboard immediately. The same table also refreshes about once a week.
 - **Invite expiry (days)** — how long a new invite link stays valid (default 14).
 
 Secrets such as the database password and login signing key stay outside this page.

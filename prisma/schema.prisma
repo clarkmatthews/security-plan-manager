@@ -486,6 +486,15 @@ model CveSyncState {
   lastHistoryTo      DateTime?
 }
 
+model CveProgramMetrics {
+  id        String    @id @default("default")
+  fetchedAt DateTime?
+  sourceUrl String    @default("https://www.cve.org/About/Metrics")
+  yearsJson Json      @default("[]")
+  lastError String?   @db.Text
+  updatedAt DateTime  @updatedAt
+}
+
 model SoftwareCveMatch {
   id               String    @id @default(cuid())
   organizationId   String

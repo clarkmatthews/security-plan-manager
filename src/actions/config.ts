@@ -12,10 +12,14 @@ import {
 import { clampCveRetentionDays, clampCveSyncIntervalHours } from "@/lib/cve-constants";
 import { sendAppEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { syncCveMetrics } from "@/lib/cve-metrics";
 
 export type ConfigState = { error?: string; ok?: boolean } | undefined;
 export type ConfigTestEmailState =
   | { error?: string; ok?: boolean }
+  | undefined;
+export type ConfigCveMetricsSyncState =
+  | { error?: string; ok?: boolean; yearCount?: number }
   | undefined;
 
 const optionalText = z
@@ -122,4 +126,21 @@ export async function sendConfigTestEmailAction(
     return { error: result.error };
   }
   return { ok: true };
+}
+
+export async function syncPublishedCveRecordsAction(
+  _prev: ConfigCveMetricsSyncState,
+  _formData: FormData,
+): Promise<ConfigCveMetricsSyncState> {
+  await requireArea("CONFIG", "edit");
+  try {
+    const result = await syncCveMetrics({ force: true });
+    revalidatePath("/app/settings/config");
+    revalidatePath("/app", "layout");
+    return { ok: true, yearCount: result.yearCount };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "CVE.org metrics could not be copied.";
+    return { error: message };
+  }
 }

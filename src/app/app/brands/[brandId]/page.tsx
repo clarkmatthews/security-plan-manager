@@ -8,7 +8,9 @@ import { FunctionScores, HighestBrandRisks, ScoreOverview } from "@/components/s
 import { HeadingWithHelp } from "@/components/help-tip";
 import { BrandPriorities } from "@/components/priorities-widget";
 import { SoftwareInsightsCards } from "@/components/software-insights";
+import { CveMetricsWidget } from "@/components/cve-metrics-widget";
 import { computeSoftwareInsights } from "@/lib/software-insights";
+import { getCveProgramMetrics, syncCveMetricsIfStale } from "@/lib/cve-metrics";
 import { computeBrandRisks } from "@/lib/brand-risks";
 import { toPriorityItems } from "@/lib/priorities";
 import { listOutcomeCatalog } from "@/lib/priority-catalog";
@@ -23,7 +25,7 @@ export default async function BrandDashboardPage({
   const membership = await requireArea("PROGRAM", "view");
   requireBrandAccess(membership, brandId);
 
-  const [brand, insights, catalog] = await Promise.all([
+  const [brand, insights, catalog, cveMetrics] = await Promise.all([
     prisma.brand.findFirst({
       where: { id: brandId, organizationId: membership.organizationId },
       include: {
@@ -53,6 +55,10 @@ export default async function BrandDashboardPage({
     }),
     computeSoftwareInsights(membership.organizationId, brandId),
     membership.permissions.PROGRAM.edit ? listOutcomeCatalog() : Promise.resolve([]),
+    (async () => {
+      await syncCveMetricsIfStale();
+      return getCveProgramMetrics();
+    })(),
   ]);
 
   if (!brand || !brand.profiles[0]) {
@@ -108,6 +114,7 @@ export default async function BrandDashboardPage({
 
       <HighestBrandRisks risks={brandRisks} />
       <SoftwareInsightsCards insights={insights} />
+      <CveMetricsWidget metrics={cveMetrics} />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import {
   saveAppConfigAction,
   sendConfigTestEmailAction,
+  syncPublishedCveRecordsAction,
+  type ConfigCveMetricsSyncState,
   type ConfigState,
   type ConfigTestEmailState,
 } from "@/actions/config";
@@ -26,10 +28,16 @@ export function ConfigForm({
   config,
   canEdit,
   testEmail,
+  cveMetrics,
 }: {
   config: PublicAppConfig;
   canEdit: boolean;
   testEmail: string | null;
+  cveMetrics: {
+    fetchedAtLabel: string | null;
+    yearCount: number;
+    lastError: string | null;
+  };
 }) {
   const [state, action] = useActionState<ConfigState, FormData>(
     saveAppConfigAction,
@@ -39,6 +47,10 @@ export function ConfigForm({
     sendConfigTestEmailAction,
     undefined,
   );
+  const [metricsState, metricsAction] = useActionState<
+    ConfigCveMetricsSyncState,
+    FormData
+  >(syncPublishedCveRecordsAction, undefined);
 
   return (
     <div className="space-y-6">
@@ -187,6 +199,39 @@ export function ConfigForm({
         ) : null}
         {canEdit ? <SubmitButton>Save configuration</SubmitButton> : null}
       </form>
+
+      <Card>
+        <HeadingWithHelp as="h2" topic="cveProgramMetrics" className="text-lg font-medium">
+          Published CVE records
+        </HeadingWithHelp>
+        <p className="mt-1 mb-4 text-sm text-[var(--muted)]">
+          Copies CVE.org’s quarterly counts onto the live dashboard. Automatic refresh is
+          about once a week. This button pulls a fresh copy now.
+        </p>
+        <p className="mb-4 text-sm text-[var(--muted)]">
+          {cveMetrics.fetchedAtLabel
+            ? `Last updated ${cveMetrics.fetchedAtLabel}${
+                cveMetrics.yearCount ? ` · ${cveMetrics.yearCount} years` : ""
+              }.`
+            : "Not copied yet."}
+        </p>
+        {cveMetrics.lastError && !metricsState?.ok ? (
+          <p className="mb-4 text-sm text-[#e07a7a]">{cveMetrics.lastError}</p>
+        ) : null}
+        {canEdit ? (
+          <form action={metricsAction}>
+            <SubmitButton variant="secondary">Sync Published CVE Records Now</SubmitButton>
+          </form>
+        ) : null}
+        {metricsState?.error ? (
+          <p className="mt-3 text-sm text-[#e07a7a]">{metricsState.error}</p>
+        ) : null}
+        {metricsState?.ok ? (
+          <p className="mt-3 text-sm text-[#4faf78]">
+            Copied {metricsState.yearCount ?? cveMetrics.yearCount} years from CVE.org.
+          </p>
+        ) : null}
+      </Card>
 
       {canEdit ? (
         <Card>

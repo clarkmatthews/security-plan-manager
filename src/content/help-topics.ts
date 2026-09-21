@@ -76,6 +76,13 @@ export const HELP_TOPICS = {
       "Outstanding and resolved CVE counts are unique application plus CVE date. Many CVEs on the same product on the same day count as one exposure.",
     ],
   },
+  cveProgramMetrics: {
+    title: "Published CVE records",
+    paragraphs: [
+      "These are CVE.org’s official quarterly counts for the entire CVE List, not this brand’s inventory matches.",
+      "The table is copied about once a week. TBA means that quarter is not published yet. Quarter-over-quarter compares consecutive completed quarters. Year-over-year compares the same quarter last year, and the annual chart uses only years with all four quarters.",
+    ],
+  },
   assessment: {
     title: "Organizational profile",
     paragraphs: [
@@ -170,7 +177,7 @@ export const HELP_TOPICS = {
   config: {
     title: "Config",
     paragraphs: [
-      "These settings apply to the whole deployment, not one brand: email (SMTP), CVE retention, CVE sync interval, and invite expiry.",
+      "These settings apply to the whole deployment, not one brand: email (SMTP), CVE retention, CVE sync interval, invite expiry, and a manual copy of CVE.org published-record counts.",
       "Access is granted on the Roles page. Secrets such as the database password stay outside this screen.",
     ],
   },
@@ -186,6 +193,7 @@ export const HELP_TOPICS = {
     paragraphs: [
       "Retention is how many days CVE records stay (default 120). Older records are pruned on the next sync.",
       "Sync interval is the minimum hours between GitHub delta pulls (default 24). Invite expiry is how long a new invite link lasts (default 14 days).",
+      "Sync Published CVE Records Now copies the CVE.org quarterly table onto the live dashboard immediately, instead of waiting for the weekly refresh.",
     ],
   },
 } as const;

@@ -1,5 +1,6 @@
 import { requireArea } from "@/lib/auth-guard";
 import { getAppConfig, toPublicAppConfig } from "@/lib/app-config";
+import { getCveMetricsSyncStatus } from "@/lib/cve-metrics";
 import { hasAccess } from "@/lib/rbac";
 import { HeadingWithHelp } from "@/components/help-tip";
 import { ConfigForm } from "@/components/config-form";
@@ -7,7 +8,10 @@ import { ConfigForm } from "@/components/config-form";
 export default async function ConfigPage() {
   const membership = await requireArea("CONFIG", "view");
   const canEdit = hasAccess(membership.permissions, "CONFIG", "edit");
-  const config = toPublicAppConfig(await getAppConfig());
+  const [config, cveMetrics] = await Promise.all([
+    getAppConfig(),
+    getCveMetricsSyncStatus(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -21,9 +25,16 @@ export default async function ConfigPage() {
         </p>
       </div>
       <ConfigForm
-        config={config}
+        config={toPublicAppConfig(config)}
         canEdit={canEdit}
         testEmail={membership.email ?? null}
+        cveMetrics={{
+          fetchedAtLabel: cveMetrics.fetchedAt
+            ? cveMetrics.fetchedAt.toLocaleString()
+            : null,
+          yearCount: cveMetrics.yearCount,
+          lastError: cveMetrics.lastError,
+        }}
       />
     </div>
   );
