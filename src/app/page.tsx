@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui";
+import { organizationExists } from "@/lib/signup-policy";
 
 export default async function HomePage() {
   const session = await auth();
   const href = session?.user ? "/app" : "/login";
+  const canBootstrap = !(await organizationExists());
 
   return (
     <div className="min-h-screen">
@@ -27,11 +29,13 @@ export default async function HomePage() {
           freezeable board snapshots - without losing the native NIST language.
         </p>
         <div className="mt-10 flex gap-4">
-          <Link href="/signup">
-            <Button>Create an organization</Button>
-          </Link>
+          {canBootstrap ? (
+            <Link href="/signup">
+              <Button>Create an organization</Button>
+            </Link>
+          ) : null}
           <Link href="/login">
-            <Button variant="secondary">Sign in</Button>
+            <Button variant={canBootstrap ? "secondary" : "primary"}>Sign in</Button>
           </Link>
         </div>
         <div className="mt-16 grid gap-4 md:grid-cols-3">

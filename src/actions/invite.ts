@@ -9,6 +9,7 @@ import { getAppConfig, inviteExpiryDays, isSmtpReady } from "@/lib/app-config";
 import { requireMembership, requireSession } from "@/lib/auth-guard";
 import { sendAppEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { inviteOrigin } from "@/lib/app-origin";
 import { isOwnerRole } from "@/lib/rbac";
 
 const inviteSchema = z.object({
@@ -25,12 +26,6 @@ export type InviteState =
       mailError?: string;
     }
   | undefined;
-
-function requestOrigin(headerList: Headers) {
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "localhost:3000";
-  const proto = headerList.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
 
 export async function createInviteAction(
   _prev: InviteState,
@@ -84,7 +79,7 @@ export async function createInviteAction(
   let mailed = false;
   let mailError: string | undefined;
   if (isSmtpReady(config)) {
-    const origin = requestOrigin(await headers());
+    const origin = inviteOrigin(await headers());
     const inviteUrl = `${origin}/invite/${token}`;
     const result = await sendAppEmail(config, {
       to: parsed.data.email.toLowerCase().trim(),
@@ -114,7 +109,7 @@ export async function acceptInviteAction(token: string) {
   }
 
   const email = session.user.email?.toLowerCase();
-  if (email && email !== invite.email) {
+  if (!email || email !== invite.email) {
     redirect("/login?error=invite-email");
   }
 

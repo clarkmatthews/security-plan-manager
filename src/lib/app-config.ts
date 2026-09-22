@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { decryptSecret, encryptSecret, isEncryptedSecret } from "@/lib/secret-box";
 import {
   CVE_RETENTION_DAYS_DEFAULT,
   CVE_SYNC_INTERVAL_HOURS_DEFAULT,
@@ -31,8 +32,27 @@ export async function getAppConfig() {
       inviteExpiryDays: INVITE_EXPIRY_DAYS_DEFAULT,
     },
   });
+  let smtpPassword = config.smtpPassword;
+  if (smtpPassword && !isEncryptedSecret(smtpPassword)) {
+    try {
+      const encrypted = encryptSecret(smtpPassword);
+      await prisma.appConfig.update({
+        where: { id: "default" },
+        data: { smtpPassword: encrypted },
+      });
+    } catch {
+      smtpPassword = config.smtpPassword;
+    }
+  } else if (smtpPassword) {
+    try {
+      smtpPassword = decryptSecret(smtpPassword);
+    } catch {
+      smtpPassword = null;
+    }
+  }
   return {
     ...config,
+    smtpPassword,
     cveRetentionDays: clampCveRetentionDays(config.cveRetentionDays),
     cveSyncIntervalHours: clampCveSyncIntervalHours(config.cveSyncIntervalHours),
     inviteExpiryDays: clampInviteExpiryDays(config.inviteExpiryDays),

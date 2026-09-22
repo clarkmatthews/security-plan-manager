@@ -51,18 +51,19 @@ Security Plan Manager is built for CISOs, assessors, control owners, auditors, a
 
 ### Roles and access
 
-- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, Roles, Config, and Software inventory. Edit includes View.
+- Per-organization roles with **None / View / Edit** for Program, Assessment, Evidence, History, Reports, People, Roles, and Software inventory. Edit includes View. Config is not granted by a role.
 - Brand access is defined on the role (all brands or selected brands), not on each person.
 - Add custom roles, optionally copying permissions and brand access from an existing role.
 
 ### Config
 
-- Deployment-wide SMTP, CVE catalog retention, CVE sync interval, and invite expiry. Not brand-specific. Opened from the hamburger after Roles.
+- Deployment-wide SMTP, CVE catalog retention, CVE sync interval, and invite expiry. Not brand-specific. Only a platform admin sees Config. The SMTP password is encrypted with `AUTH_SECRET` before it is stored.
 
 ### Accounts
 
-- Email/password sign-in and sign-up.
-- New accounts create an organization, first brand, and a full CSF 2.0 profile for the current period.
+- Email/password sign-in. Public sign-up is only for the first organization, or from an invite link after that.
+- The first account creates an organization, first brand, and a full CSF 2.0 profile for the current period, and that person is the platform admin.
+- Sign-in locks an email for 15 minutes after 5 failed attempts.
 - Demo tenant is seeded with scored assessments, evidence, software inventory, and published board snapshots.
 
 ## Stack
@@ -71,7 +72,7 @@ Next.js App Router, Auth.js (credentials JWT), Prisma, and PostgreSQL.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set `AUTH_SECRET`. Set `CVE_SYNC_SECRET` before exposing the CVE sync HTTP endpoint. Demo accounts and the demo tenant seed are on by default in development; set `DEMO_LOGIN=0` or run in production to hide them.
+1. Copy `.env.example` to `.env`. Set `AUTH_SECRET` and `AUTH_URL` to real values (`AUTH_URL` is the only origin used in emailed invite links). Set `CVE_SYNC_SECRET` before exposing the CVE sync HTTP endpoints. Leave `DEMO_LOGIN=0` except on a private demo. Unset `DEMO_LOGIN` still shows demo accounts in development.
 2. Start Postgres. Prefer Docker (`docker compose up -d`). If Docker is not installed, run a workspace-local cluster with `npm run db:start`.
 3. Push schema and seed the CSF catalog:
 
@@ -97,7 +98,7 @@ An external crontab or host scheduler can POST to `/api/cron/cve-sync` with `Aut
 
 ## Demo login
 
-Shown on `/login` in development, or when `DEMO_LOGIN=1`. Do not seed or expose these accounts on a public host.
+Shown on `/login` only when `DEMO_LOGIN=1`, or in development when `DEMO_LOGIN` is unset. Do not seed or expose these accounts on a public host. The demo CISO is the platform admin for that tenant.
 
 | Role | Email | Password |
 | --- | --- | --- |

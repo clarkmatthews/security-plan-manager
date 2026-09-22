@@ -12,6 +12,7 @@ import {
 import { clampCveRetentionDays, clampCveSyncIntervalHours } from "@/lib/cve-constants";
 import { sendAppEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { encryptSecret } from "@/lib/secret-box";
 import { syncCveMetrics } from "@/lib/cve-metrics";
 
 export type ConfigState = { error?: string; ok?: boolean } | undefined;
@@ -77,6 +78,15 @@ export async function saveAppConfigAction(
 
   const current = await getAppConfig();
   const password = parsed.data.smtpPassword ?? "";
+  let encryptedPassword: string | undefined;
+  if (password) {
+    try {
+      encryptedPassword = encryptSecret(password);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not store the SMTP password.";
+      return { error: message };
+    }
+  }
 
   await prisma.appConfig.update({
     where: { id: "default" },
@@ -87,7 +97,7 @@ export async function saveAppConfigAction(
       smtpUser: emptyToNull(parsed.data.smtpUser),
       smtpFromName: emptyToNull(parsed.data.smtpFromName),
       smtpFromEmail: emptyToNull(parsed.data.smtpFromEmail),
-      ...(password ? { smtpPassword: password } : {}),
+      ...(encryptedPassword ? { smtpPassword: encryptedPassword } : {}),
       cveRetentionDays: clampCveRetentionDays(parsed.data.cveRetentionDays),
       cveSyncIntervalHours: clampCveSyncIntervalHours(parsed.data.cveSyncIntervalHours),
       inviteExpiryDays: clampInviteExpiryDays(parsed.data.inviteExpiryDays),

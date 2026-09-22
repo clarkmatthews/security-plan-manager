@@ -21,7 +21,7 @@ export default async function ConfigPage() {
         </HeadingWithHelp>
         <p className="mt-2 max-w-3xl text-[var(--muted)]">
           Deployment-wide email, CVE catalog, and invite settings. They are not
-          brand-specific. Access is granted on the Roles page.
+          brand-specific. Only a platform admin can open this page.
         </p>
       </div>
       <ConfigForm

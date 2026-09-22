@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireArea } from "@/lib/auth-guard";
 import {
   ACCESS_MODES,
-  PRODUCT_AREAS,
+  ROLE_MATRIX_AREAS,
   accessFromMode,
   emptyPermissionMap,
   type AccessMode,
@@ -45,9 +45,10 @@ function parseMatrix(formData: FormData, roleKeys: string[]): RolePermissionMatr
   const matrix: RolePermissionMatrix = {};
   for (const role of roleKeys) {
     matrix[role] = emptyPermissionMap();
-    for (const area of PRODUCT_AREAS) {
+    for (const area of ROLE_MATRIX_AREAS) {
       matrix[role][area.code] = accessFromMode(parseMode(formData.get(`${role}:${area.code}`)));
     }
+    matrix[role].CONFIG = { view: false, edit: false };
   }
   return matrix;
 }

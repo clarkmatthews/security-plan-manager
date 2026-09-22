@@ -9,9 +9,13 @@ import { SubmitButton } from "@/components/submit-button";
 export function AuthForm({
   mode,
   callbackUrl,
+  allowSignupLink = false,
+  accountHint = true,
 }: {
   mode: "login" | "signup";
   callbackUrl?: string;
+  allowSignupLink?: boolean;
+  accountHint?: boolean;
 }) {
   const action = mode === "login" ? loginAction : signupAction;
   const [state, formAction] = useActionState(action, undefined);
@@ -35,14 +39,19 @@ export function AuthForm({
       </div>
       {state?.error ? <p className="text-sm text-[#e07a7a]">{state.error}</p> : null}
       <SubmitButton>{mode === "login" ? "Sign in" : "Create account"}</SubmitButton>
+      {accountHint ? (
       <p className="text-sm text-[var(--muted)]">
         {mode === "login" ? (
-          <>
-            No account?{" "}
-            <Link href="/signup" className="text-[var(--foreground)] underline">
-              Sign up
-            </Link>
-          </>
+          allowSignupLink ? (
+            <>
+              No account?{" "}
+              <Link href="/signup" className="text-[var(--foreground)] underline">
+                Sign up
+              </Link>
+            </>
+          ) : (
+            <>Ask an owner for an invite if you need an account.</>
+          )
         ) : (
           <>
             Already registered?{" "}
@@ -52,6 +61,7 @@ export function AuthForm({
           </>
         )}
       </p>
+      ) : null}
     </form>
   );
 }

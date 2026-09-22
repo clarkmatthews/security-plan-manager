@@ -1,5 +1,6 @@
 import { AuthForm } from "@/components/auth-form";
 import { isDemoLoginEnabled } from "@/lib/demo";
+import { organizationExists } from "@/lib/signup-policy";
 
 export default async function LoginPage({
   searchParams,
@@ -8,6 +9,7 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   const deactivated = error === "deactivated";
+  const allowSignupLink = !(await organizationExists());
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
@@ -20,7 +22,7 @@ export default async function LoginPage({
           This account has been deactivated. Contact an organization owner to restore access.
         </p>
       ) : null}
-      <AuthForm mode="login" />
+      <AuthForm mode="login" allowSignupLink={allowSignupLink} />
       {isDemoLoginEnabled() ? (
         <div className="mt-8 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4 text-xs text-[var(--muted)]">
           <div className="mb-1 font-medium text-[var(--foreground)]">Demo accounts</div>

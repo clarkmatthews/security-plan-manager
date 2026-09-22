@@ -48,7 +48,7 @@ export default async function InvitePage({
           You were invited as {roleName}. Sign in or create an account with{" "}
           {invite.email}.
         </p>
-        <AuthForm mode="login" callbackUrl={`/invite/${token}`} />
+        <AuthForm mode="login" callbackUrl={`/invite/${token}`} accountHint={false} />
         <div className="mt-6 text-sm text-[var(--muted)]">Need an account?</div>
         <div className="mt-3">
           <AuthForm mode="signup" callbackUrl={`/invite/${token}`} />

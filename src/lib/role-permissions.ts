@@ -43,6 +43,14 @@ export async function ensureRolePermissions(organizationId: string, db: Db = pri
   if (data.length > 0) {
     await db.rolePermission.createMany({ data, skipDuplicates: true });
   }
+  await db.rolePermission.updateMany({
+    where: {
+      organizationId,
+      area: "CONFIG",
+      OR: [{ canRead: true }, { canView: true }, { canEdit: true }],
+    },
+    data: { canRead: false, canView: false, canEdit: false },
+  });
   await ensureRoleBrandScopes(organizationId, db);
 }
 
@@ -51,9 +59,8 @@ export async function loadPermissionMap(
   role: string,
   isPlatformAdmin = false,
 ): Promise<PermissionMap> {
-  if (isPlatformAdmin) return defaultPermissionMap("PLATFORM_ADMIN");
-
   await ensureRolePermissions(organizationId);
+  if (isPlatformAdmin) return defaultPermissionMap("PLATFORM_ADMIN");
   const rows = await prisma.rolePermission.findMany({
     where: { organizationId, role },
   });
@@ -67,6 +74,7 @@ export async function loadPermissionMap(
         : fallback[area.code],
     );
   }
+  map.CONFIG = { view: false, edit: false };
   return map;
 }
 

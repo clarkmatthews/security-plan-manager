@@ -4,7 +4,7 @@ import { requireMembership } from "@/lib/auth-guard";
 import { hasBrandAccess } from "@/lib/brand-access";
 import { attachmentDisposition } from "@/lib/content-disposition";
 import { prisma } from "@/lib/prisma";
-import { evidenceFilePath } from "@/lib/evidence-storage";
+import { evidenceFilePath, mimeForStoredName } from "@/lib/evidence-storage";
 
 export async function GET(
   _request: Request,
@@ -37,7 +37,8 @@ export async function GET(
     );
     return new NextResponse(new Uint8Array(bytes), {
       headers: {
-        "Content-Type": evidence.mimeType ?? "application/octet-stream",
+        "Content-Type": mimeForStoredName(evidence.storedName),
+        "X-Content-Type-Options": "nosniff",
         "Content-Length": String(bytes.byteLength),
         "Content-Disposition": attachmentDisposition(
           evidence.fileName ?? evidence.storedName,

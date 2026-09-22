@@ -173,11 +173,12 @@ export async function seedDemoWorkspace(prisma: PrismaClient) {
 
   const ciso = await prisma.user.upsert({
     where: { email: "ciso@apex.example" },
-    update: { name: "Jordan Hale", passwordHash },
+    update: { name: "Jordan Hale", passwordHash, isPlatformAdmin: true },
     create: {
       email: "ciso@apex.example",
       name: "Jordan Hale",
       passwordHash,
+      isPlatformAdmin: true,
     },
   });
 

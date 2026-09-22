@@ -5,9 +5,25 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
 import { getActiveMembership, isDeactivatedUser } from "@/lib/membership";
+import {
+  clearLoginFailures,
+  loginAttemptBlocked,
+  recordLoginFailure,
+} from "@/lib/login-throttle";
 
 class DeactivatedSignin extends CredentialsSignin {
   code = "deactivated";
+}
+
+class RateLimitedSignin extends CredentialsSignin {
+  code = "rate_limited";
+}
+
+let dummyPasswordHash: string | null = null;
+
+async function compareDummyPassword(password: string) {
+  dummyPasswordHash ??= await bcrypt.hash("login-throttle-dummy", 10);
+  await bcrypt.compare(password, dummyPasswordHash);
 }
 
 export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
@@ -26,12 +42,23 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           .trim();
         const password = String(credentials?.password ?? "");
         if (!email || !password) return null;
+        if (loginAttemptBlocked(email)) {
+          throw new RateLimitedSignin();
+        }
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user?.passwordHash) return null;
+        if (!user?.passwordHash) {
+          await compareDummyPassword(password);
+          recordLoginFailure(email);
+          return null;
+        }
 
         const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          recordLoginFailure(email);
+          return null;
+        }
+        clearLoginFailures(email);
 
         if (await isDeactivatedUser(user.id)) {
           throw new DeactivatedSignin();

@@ -29,6 +29,21 @@ export function evidenceFilePath(
   return path.join(evidenceDirectory(organizationId, evidenceId), storedName);
 }
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  ".pdf": "application/pdf",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".txt": "text/plain",
+};
+
+export function mimeForStoredName(storedName: string) {
+  return MIME_BY_EXTENSION[path.extname(storedName).toLowerCase()] ?? "application/octet-stream";
+}
+
 export function sanitizeFileName(name: string) {
   const base = path.basename(name).replace(/[^a-zA-Z0-9._-]/g, "_");
   return (base || "evidence").slice(0, 180);
@@ -69,7 +84,7 @@ export async function storeEvidenceFile(args: {
   return {
     fileName: sanitizeFileName(args.file.name),
     storedName,
-    mimeType: args.file.type || "application/octet-stream",
+    mimeType: mimeForStoredName(storedName),
     sizeBytes: args.file.size,
   };
 }

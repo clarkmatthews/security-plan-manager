@@ -164,7 +164,7 @@ export const HELP_TOPICS = {
     title: "View and Edit",
     paragraphs: [
       "None hides the area. View lets people see lists and details. Edit lets them create, change, or delete.",
-      "Config and Roles are sensitive. Assessors and board viewers start with no access there unless you grant it.",
+      "Roles are sensitive. Config is not on this matrix. Only a platform admin can open Config.",
     ],
   },
   brandAccess: {
@@ -178,7 +178,7 @@ export const HELP_TOPICS = {
     title: "Config",
     paragraphs: [
       "These settings apply to the whole deployment, not one brand: email (SMTP), CVE retention, CVE sync interval, invite expiry, and a manual copy of CVE.org published-record counts.",
-      "Access is granted on the Roles page. Secrets such as the database password stay outside this screen.",
+      "Only a platform admin can open this page. Organization roles cannot grant Config. The SMTP password is encrypted before it is stored.",
     ],
   },
   configSmtp: {

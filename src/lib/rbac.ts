@@ -89,6 +89,9 @@ export const PRODUCT_AREAS = [
   },
 ] as const;
 
+/** Org role matrix. Config is deployment-wide and is not granted by a role. */
+export const ROLE_MATRIX_AREAS = PRODUCT_AREAS.filter((area) => area.code !== "CONFIG");
+
 export type ProductAreaCode = (typeof PRODUCT_AREAS)[number]["code"];
 export type AccessLevel = "view" | "edit";
 export type AccessMode = "none" | "view" | "edit";
@@ -125,9 +128,9 @@ function mapWith(
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMap> = {
   PLATFORM_ADMIN: mapWith({}, full),
-  ORG_OWNER: mapWith({}, full),
-  CISO: mapWith({}, full),
-  CSO: mapWith({}, full),
+  ORG_OWNER: mapWith({ CONFIG: none }, full),
+  CISO: mapWith({ CONFIG: none }, full),
+  CSO: mapWith({ CONFIG: none }, full),
   ASSESSOR: mapWith({
     PROGRAM: viewOnly,
     ASSESSMENT: full,

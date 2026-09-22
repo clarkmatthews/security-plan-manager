@@ -2,7 +2,7 @@
 
 ## Create an account
 
-**Create an account** asks for your name, email, and password. That only creates you as a person. Next you land on **Set up your organization**.
+The first person to use a new deployment can create an account and then an organization. After that, new people join from an **invite link**. The public sign-up page does not open another organization.
 
 ## First organization and brand
 
@@ -30,7 +30,7 @@ A **brand** is one program you score. An organization can have several brands. E
 Open the menu in the top left.
 
 - **Program** lists brands you are allowed to open. Each brand expands to assessment, evidence, reports, publish (if you can publish), and software inventory.
-- **People**, **Roles**, and **Config** sit after the brands. Config is last.
+- **People**, **Roles**, and **Config** sit after the brands. Config is last and only appears for a platform admin.
 
 If you cannot see a link, your role does not include View for that area, or your role cannot open that brand.
 
@@ -38,8 +38,8 @@ If you cannot see a link, your role does not include View for that area, or your
 
 These defaults can be changed on the Roles page, except the owner role is locked.
 
-- **Organization owner** — full access; only owners can invite another owner.
-- **CISO** — full access by default.
+- **Organization owner** — full access to the organization, except Config. Only owners can invite another owner. The first owner on a new deployment is also the platform admin.
+- **CISO** — full access to the organization, except Config, unless that person is the platform admin.
 - **Assessor** and **Control owner** — score and attach evidence; they can view reports, people, and software, but not Roles or Config.
 - **Auditor** — view-only on the working program.
 - **Board / executive viewer** — published reports only. They do not get a Program dashboard.

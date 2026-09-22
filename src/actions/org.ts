@@ -32,6 +32,11 @@ export async function completeOnboarding(
   formData: FormData,
 ): Promise<OrgState> {
   const session = await requireSession();
+  if (await prisma.organization.count()) {
+    return {
+      error: "This deployment already has an organization. Ask an owner for an invite.",
+    };
+  }
   if (await getActiveMembership(session.user.id)) {
     redirect("/app");
   }
@@ -78,6 +83,11 @@ export async function completeOnboarding(
         organizationId: org.id,
         role: "ORG_OWNER",
       },
+    });
+
+    await tx.user.update({
+      where: { id: session.user.id },
+      data: { isPlatformAdmin: true },
     });
 
     await ensureRolePermissions(org.id, tx);

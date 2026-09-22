@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui";
 import {
   ACCESS_MODES,
-  PRODUCT_AREAS,
+  ROLE_MATRIX_AREAS,
   accessFromMode,
   accessMode,
   isOwnerRole,
@@ -83,7 +83,7 @@ export function RolePermissionsForm({
           <input key={role} type="hidden" name="roleKey" value={role} />
         ))}
         {roleKeys.flatMap((role) =>
-          PRODUCT_AREAS.map((area) => (
+          ROLE_MATRIX_AREAS.map((area) => (
             <input
               key={`${role}:${area.code}`}
               type="hidden"
@@ -149,7 +149,7 @@ export function RolePermissionsForm({
               </tr>
             </thead>
             <tbody>
-              {PRODUCT_AREAS.map((area) => {
+              {ROLE_MATRIX_AREAS.map((area) => {
                 const mode = accessMode(
                   matrix[activeRole]?.[area.code] ?? { view: false, edit: false },
                 );

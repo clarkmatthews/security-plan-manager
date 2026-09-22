@@ -13,6 +13,7 @@ import { loadPermissionMap } from "@/lib/role-permissions";
 import { getActiveMembership, isDeactivatedUser } from "@/lib/membership";
 import { loadRoleBrandScope, scopeToAccess, hasBrandAccess, type BrandAccessMembership } from "@/lib/brand-access";
 import { ensureOrganizationRoles } from "@/lib/org-roles";
+import { resolvePlatformAdmin } from "@/lib/platform-admin";
 import { prisma } from "@/lib/prisma";
 
 export async function requireSession() {
@@ -35,12 +36,13 @@ export async function requireMembership(allowed?: string[]) {
   }
 
   await ensureOrganizationRoles(membership.organizationId);
+  const isPlatformAdmin = await resolvePlatformAdmin(session.user.id);
 
   const [permissions, brandScope, orgRole] = await Promise.all([
     loadPermissionMap(
       membership.organizationId,
       membership.role,
-      Boolean(session.user.isPlatformAdmin),
+      isPlatformAdmin,
     ),
     loadRoleBrandScope(membership.organizationId, membership.role),
     prisma.organizationRole.findUnique({
@@ -57,14 +59,14 @@ export async function requireMembership(allowed?: string[]) {
   if (
     allowed &&
     !allowed.includes(membership.role) &&
-    !session.user.isPlatformAdmin
+    !isPlatformAdmin
   ) {
     redirect(homePath(permissions));
   }
 
   const brandAccess = scopeToAccess(
     membership.organizationId,
-    Boolean(session.user.isPlatformAdmin),
+    isPlatformAdmin,
     brandScope,
   );
 

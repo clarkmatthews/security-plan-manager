@@ -14,7 +14,9 @@ People with People **Edit** can change roles, deactivate, and reactivate. Deacti
 
 Each role has **None / View / Edit** for every product area:
 
-- Program, Assessment, Evidence, History, Reports, People, Roles, Config, Software inventory.
+- Program, Assessment, Evidence, History, Reports, People, Roles, and Software inventory.
+
+Config is not a role permission. It stays with the platform admin.
 
 **Edit includes View.** View means see lists and details. Edit means create, change, or delete in that area.
 
@@ -24,9 +26,9 @@ You can add a custom role and optionally copy another role’s permissions. You 
 
 ## Config
 
-Config is for the **whole deployment**, not one brand. Typical editors are owners and CISOs.
+Config is for the **whole deployment**, not one brand. Only a **platform admin** can open it. That is the person who created the first organization, or the earliest owner (or CISO, if there is no owner) when no platform admin has been set yet. Owners and CISOs do not get Config from their role.
 
-- **Email (SMTP)** — host, port, encryption, username, password, from name, from address. Password is write-only (leave blank to keep the stored value). Invites still work as copyable links if mail is not set up. You can send a test message to yourself after saving.
+- **Email (SMTP)** — host, port, encryption, username, password, from name, from address. Password is write-only and stored encrypted (leave blank to keep the stored value). Invite emails use `AUTH_URL`, not the browser’s host. You can send a test message to yourself after saving.
 - **CVE retention (days)** — how long CVE records stay in the catalog (default 120).
 - **CVE sync interval (hours)** — minimum time between automatic GitHub delta pulls (default 24).
 - **Published CVE records** — **Sync Published CVE Records Now** copies CVE.org’s quarterly counts onto the live dashboard immediately. The same table also refreshes about once a week.

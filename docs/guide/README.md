@@ -13,7 +13,7 @@ It is not a spreadsheet. Everyone with access sees the same live scores. A publi
 | Role | Typical job in this product |
 | --- | --- |
 | Organization owner | Sets up the organization, invites people, and can assign the owner role |
-| CISO | Sees the full program: scores, risks, software, people, roles, and Config |
+| CISO | Sees the full program: scores, risks, software, people, and roles. Config is for the platform admin |
 | Assessor / control owner | Scores outcomes, attaches evidence, and maintains software inventory |
 | Auditor | Reads assessments, evidence, history, and reports |
 | Board / executive viewer | Reads published reports only |
@@ -27,7 +27,7 @@ After you sign in, the hamburger menu lists:
 1. **Program** — your brands. Under each brand: assessment, evidence, reports, publish, and software inventory.
 2. **People** — who is in the organization.
 3. **Roles** — what each role can see and change, and which brands they can open.
-4. **Config** — deployment-wide email and CVE settings. Not tied to one brand.
+4. **Config** — deployment-wide email and CVE settings for the platform admin. Not tied to one brand, and not granted from Roles.
 
 You only see items your role allows. Board viewers usually see **Reports** instead of Program.
 

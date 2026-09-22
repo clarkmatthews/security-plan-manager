@@ -32,7 +32,7 @@ On the brand dashboard, outstanding and resolved CVE counts are unique **applica
 
 ## Published CVE records (CVE.org)
 
-The bottom of the live dashboard also shows the CVE.org **Published CVE Records** table: quarterly counts for the whole CVE List, not this brand. The table is copied about once a week. Incomplete quarters show as TBA. The charts are percent change: quarter over quarter for completed quarters, and year over year for years that already have all four quarters. People with Config **Edit** can also press **Sync Published CVE Records Now** on Config to copy a fresh table immediately.
+The bottom of the live dashboard also shows the CVE.org **Published CVE Records** table: quarterly counts for the whole CVE List, not this brand. The table is copied about once a week. Incomplete quarters show as TBA. The charts are percent change: quarter over quarter for completed quarters, and year over year for years that already have all four quarters. A platform admin can also press **Sync Published CVE Records Now** on Config to copy a fresh table immediately.
 
 Board snapshots do not freeze this widget.
 
